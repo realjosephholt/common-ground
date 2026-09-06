@@ -14,12 +14,16 @@
     "test:sim": "vitest run tests/simulation",
     "test:postgres": "vitest run --no-file-parallelism",
     "typecheck": "tsc --noEmit",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "regions:build": "node scripts/build-region-extract.ts",
+    "regions:seed": "vite-node scripts/seed-regions.ts",
+    "regions:reconcile": "vite-node scripts/reconcile-regions.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "drizzle-kit": "^0.31.10",
     "typescript": "^5.7.2",
+    "vite-node": "^6.0.0",
     "vitest": "^2.1.8"
   },
   "dependencies": {

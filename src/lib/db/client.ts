@@ -60,7 +60,10 @@ async function createPglite(config: DatabaseConfig): Promise<DatabaseHandle> {
     import("drizzle-orm/pglite/migrator"),
   ]);
 
-  const client = config.dataDir ? new PGlite(config.dataDir) : new PGlite();
+  // With no directory this is an ephemeral in-process database, which is what tests
+  // want and what a script almost never does — hence PGLITE_DATA_DIR.
+  const dataDir = config.dataDir ?? process.env["PGLITE_DATA_DIR"];
+  const client = dataDir ? new PGlite(dataDir) : new PGlite();
   const db = drizzle(client, { schema });
 
   return {
