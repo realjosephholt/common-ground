@@ -1,0 +1,20 @@
+{
+  "name": "common-ground",
+  "version": "0.1.0",
+  "private": false,
+  "license": "AGPL-3.0-or-later",
+  "description": "Find causes with enough shared support to act on — then actually organize the action.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:sim": "vitest run tests/simulation",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
