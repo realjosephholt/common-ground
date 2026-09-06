@@ -3,7 +3,7 @@ import { getTableColumns, getTableName } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 import { describe, expect, it } from "vitest";
 
-import { resolveBackend } from "@/lib/db/client.js";
+import { queryRows, resolveBackend } from "@/lib/db/client.js";
 import { schema } from "@/lib/db/schema.js";
 import { setupTestDatabase } from "../helpers/db.js";
 
@@ -17,10 +17,11 @@ describe("database foundation", () => {
   });
 
   it("applies the checked-in migrations", async () => {
-    const applied = await ctx.db.execute<{ count: number }>(
+    const applied = await queryRows<{ count: number }>(
+      ctx.db,
       sql`select count(*)::int as count from drizzle.__drizzle_migrations`,
     );
-    expect(Number(applied.rows[0]?.count ?? 0)).toBeGreaterThan(0);
+    expect(Number(applied[0]?.count ?? 0)).toBeGreaterThan(0);
   });
 
   /**
@@ -29,10 +30,11 @@ describe("database foundation", () => {
    * that drift a failure here instead of a mystery in production.
    */
   it("produces a database matching every table and column the schema module declares", async () => {
-    const live = await ctx.db.execute<{ table_name: string; column_name: string }>(
+    const live = await queryRows<{ table_name: string; column_name: string }>(
+      ctx.db,
       sql`select table_name, column_name from information_schema.columns where table_schema = 'public'`,
     );
-    const actual = new Set(live.rows.map((r) => `${r.table_name}.${r.column_name}`));
+    const actual = new Set(live.map((r) => `${r.table_name}.${r.column_name}`));
 
     const expected: string[] = [];
     for (const table of Object.values(schema) as PgTable[]) {
@@ -44,7 +46,7 @@ describe("database foundation", () => {
   });
 
   it("hands each test an empty database", async () => {
-    const rows = await ctx.db.execute<{ count: number }>(sql`select count(*)::int as count from participants`);
-    expect(Number(rows.rows[0]?.count ?? 0)).toBe(0);
+    const rows = await queryRows<{ count: number }>(ctx.db, sql`select count(*)::int as count from participants`);
+    expect(Number(rows[0]?.count ?? 0)).toBe(0);
   });
 });

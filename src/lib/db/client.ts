@@ -11,6 +11,7 @@
  */
 
 import { fileURLToPath } from "node:url";
+import type { SQL } from "drizzle-orm";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 
 import { schema } from "./schema.js";
@@ -91,4 +92,18 @@ async function createPostgres(config: DatabaseConfig): Promise<DatabaseHandle> {
     migrate: () => migrate(db, { migrationsFolder: MIGRATIONS_FOLDER }),
     close: () => client.end({ timeout: 5 }),
   };
+}
+
+/**
+ * Run a raw statement and get plain rows back, whichever backend is underneath.
+ *
+ * The two drivers genuinely disagree here: PGlite's `execute` resolves to
+ * `{ rows: [...] }` and postgres-js resolves to the row array itself. This is exactly
+ * the class of divergence the dual-backend arrangement exists to catch, and normalising
+ * it in one place is cheaper than every caller discovering it separately.
+ */
+export async function queryRows<T>(db: Database, statement: SQL): Promise<T[]> {
+  const result: unknown = await db.execute(statement);
+  if (Array.isArray(result)) return result as T[];
+  return ((result as { rows?: T[] }).rows ?? []) as T[];
 }
