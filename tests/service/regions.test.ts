@@ -6,22 +6,9 @@ import { parseRegionExtract, readVendoredExtract } from "@/lib/regions/extract.j
 import { createContext } from "@/lib/services/context.js";
 import { parseDeletesFeed, reconcileRegions, searchRegions, seedRegions } from "@/lib/services/regions.js";
 import { setupTestDatabase } from "../helpers/db.js";
+import { REGION_FIXTURE } from "../helpers/fixtures.js";
 
 const ctx = setupTestDatabase();
-
-/**
- * A fixture rather than the 51,710-row vendored extract: seeding the whole world into
- * every test would make the suite slow enough that people stop running it, and the two
- * Springfields prove the disambiguation more legibly than a real pair would.
- */
-const FIXTURE = [
-  "geoname_id\tname\tascii_name\tcountry_code\tlevel\tadmin1_code\tadmin2_code",
-  "6252001\tUnited States\tUnited States\tUS\tcountry\t\t",
-  "4896861\tIllinois\tIllinois\tUS\tadmin1\tIL\t",
-  "4398678\tMissouri\tMissouri\tUS\tadmin1\tMO\t",
-  "4250542\tSpringfield\tSpringfield\tUS\tadmin2\tIL\t167",
-  "4409896\tSpringfield\tSpringfield\tUS\tadmin2\tMO\t077",
-].join("\n");
 
 function context() {
   return createContext(ctx.db);
@@ -29,7 +16,7 @@ function context() {
 
 describe("seeding Regions", () => {
   it("populates Regions with their parent relationships", async () => {
-    const result = await seedRegions(context(), { rows: parseRegionExtract(FIXTURE), version: "fixture-1" });
+    const result = await seedRegions(context(), { rows: parseRegionExtract(REGION_FIXTURE), version: "fixture-1" });
     expect(result.inserted).toBe(5);
 
     const rows = await queryRows<{ name: string; parent: string | null }>(
@@ -44,7 +31,7 @@ describe("seeding Regions", () => {
   });
 
   it("is safe to run twice", async () => {
-    const rows = parseRegionExtract(FIXTURE);
+    const rows = parseRegionExtract(REGION_FIXTURE);
     await seedRegions(context(), { rows, version: "fixture-1" });
     await seedRegions(context(), { rows, version: "fixture-2" });
 
@@ -53,7 +40,7 @@ describe("seeding Regions", () => {
   });
 
   it("keys Regions on geonameId and never on the administrative codes", async () => {
-    await seedRegions(context(), { rows: parseRegionExtract(FIXTURE), version: "fixture-1" });
+    await seedRegions(context(), { rows: parseRegionExtract(REGION_FIXTURE), version: "fixture-1" });
     const [row] = await queryRows<{ geoname_id: number }>(
       ctx.db,
       sql`select geoname_id from regions where ascii_name = 'Springfield' and admin1_code = 'IL'`,
@@ -64,7 +51,7 @@ describe("seeding Regions", () => {
 
 describe("finding a Region", () => {
   it("tells two identically-named places apart by their parent chain", async () => {
-    await seedRegions(context(), { rows: parseRegionExtract(FIXTURE), version: "fixture-1" });
+    await seedRegions(context(), { rows: parseRegionExtract(REGION_FIXTURE), version: "fixture-1" });
 
     const results = await searchRegions(context(), { query: "Springfield" });
     expect(results).toHaveLength(2);
@@ -76,14 +63,14 @@ describe("finding a Region", () => {
   });
 
   it("matches a prefix, case-insensitively", async () => {
-    await seedRegions(context(), { rows: parseRegionExtract(FIXTURE), version: "fixture-1" });
+    await seedRegions(context(), { rows: parseRegionExtract(REGION_FIXTURE), version: "fixture-1" });
     expect((await searchRegions(context(), { query: "illin" })).map((r) => r.name)).toEqual(["Illinois"]);
   });
 });
 
 describe("reconciling a dataset version bump", () => {
   it("reports references broken by a Region that upstream has retired", async () => {
-    await seedRegions(context(), { rows: parseRegionExtract(FIXTURE), version: "fixture-1" });
+    await seedRegions(context(), { rows: parseRegionExtract(REGION_FIXTURE), version: "fixture-1" });
 
     // Springfield, Illinois has been retired upstream, and something points at it.
     await ctx.db.execute(
@@ -92,7 +79,7 @@ describe("reconciling a dataset version bump", () => {
     );
 
     const report = await reconcileRegions(context(), {
-      rows: parseRegionExtract(FIXTURE).filter((r) => r.geonameId !== 4250542),
+      rows: parseRegionExtract(REGION_FIXTURE).filter((r) => r.geonameId !== 4250542),
       version: "fixture-2",
       deletedGeonameIds: [4250542],
     });
@@ -104,9 +91,9 @@ describe("reconciling a dataset version bump", () => {
   });
 
   it("passes when nothing references a retired Region", async () => {
-    await seedRegions(context(), { rows: parseRegionExtract(FIXTURE), version: "fixture-1" });
+    await seedRegions(context(), { rows: parseRegionExtract(REGION_FIXTURE), version: "fixture-1" });
     const report = await reconcileRegions(context(), {
-      rows: parseRegionExtract(FIXTURE).filter((r) => r.geonameId !== 4409896),
+      rows: parseRegionExtract(REGION_FIXTURE).filter((r) => r.geonameId !== 4409896),
       version: "fixture-2",
       deletedGeonameIds: [4409896],
     });
