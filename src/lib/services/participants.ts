@@ -259,7 +259,8 @@ async function onParticipantErased(ctx: ServiceContext, participantId: string): 
   // than removed, so who attested to whom survives; then the direct subjects are
   // reconsidered and nobody further, exactly as a manual revocation would (ADR-0008).
   await ctx.db.execute(
-    sql`update vouches set revoked_at = ${ctx.now()} where revoked_at is null and (voucher_id = ${participantId} or subject_id = ${participantId})`,
+    sql`update vouches set revoked_at = ${ctx.now().toISOString()}::timestamptz
+         where revoked_at is null and (voucher_id = ${participantId} or subject_id = ${participantId})`,
   );
   await demoteSubjectsOf(ctx, participantId);
 

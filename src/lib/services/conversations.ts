@@ -121,7 +121,7 @@ async function assertUnderRateLimit(ctx: ServiceContext, participantId: string):
   const [row] = await queryRows<{ count: number }>(
     ctx.db,
     sql`select count(*)::int as count from conversations
-        where created_by = ${participantId} and created_at > ${since}`,
+        where created_by = ${participantId} and created_at > ${since.toISOString()}::timestamptz`,
   );
   if (Number(row?.count ?? 0) >= settings.conversationRateLimit) {
     throw new ServiceError(

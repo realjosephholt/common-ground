@@ -7,7 +7,7 @@
  * hashes — so a database leak does not hand an attacker a set of working sign-in links.
  */
 
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, gt, isNull } from "drizzle-orm";
 import { createHash, randomBytes } from "node:crypto";
 
 import { uuidv7 } from "../db/ids.js";
@@ -92,7 +92,7 @@ export async function consumeSignInToken(ctx: ServiceContext, input: { token: st
       and(
         eq(magicLinkTokens.tokenHash, hashToken(input.token)),
         isNull(magicLinkTokens.consumedAt),
-        sql`${magicLinkTokens.expiresAt} > ${now}`,
+        gt(magicLinkTokens.expiresAt, now),
       ),
     )
     .returning();
@@ -145,7 +145,7 @@ export async function resolveActor(ctx: ServiceContext, sessionToken: string | n
       and(
         eq(sessions.tokenHash, hashToken(sessionToken)),
         isNull(sessions.revokedAt),
-        sql`${sessions.expiresAt} > ${now}`,
+        gt(sessions.expiresAt, now),
         eq(participants.tombstoned, false),
       ),
     )

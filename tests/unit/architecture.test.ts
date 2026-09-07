@@ -95,3 +95,37 @@ describe("the offline guarantee", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+/**
+ * A JavaScript `Date` interpolated into a raw `sql` template, with no column type for
+ * the driver to work from, is encoded by `postgres-js` with `Date#toString()` — which
+ * produces "Mon Sep 07 2026 01:01:03 GMT+0000 (Coordinated Universal Time)" and which
+ * server Postgres rejects. PGlite accepts it, so the whole suite passes locally and
+ * every affected query fails in CI.
+ *
+ * Use a typed operator (`gt`, `lt`, `eq`) where a column is involved, so Drizzle knows
+ * how to encode the value; where the SQL genuinely has to be raw, pass
+ * `date.toISOString()` and cast it.
+ */
+describe("timestamps in raw SQL", () => {
+  const DATEY = /\b(now|since|cutoff|before|after|expiresAt|createdAt|updatedAt|revokedAt|At)\b/;
+
+  it("never interpolates a bare Date into a sql template", () => {
+    const offenders: string[] = [];
+
+    for (const file of sourceFiles("src")) {
+      const source = readFileSync(file, "utf8");
+      for (const template of source.matchAll(/sql`(?:[^`\\]|\\.)*`/gs)) {
+        for (const interpolation of template[0].matchAll(/\$\{([^}]*)\}/g)) {
+          const expression = interpolation[1]!;
+          // A column reference is fine — Drizzle types those. A cast is fine too.
+          if (expression.includes(".toISOString()")) continue;
+          if (/^\s*\w+\.\w+\s*$/.test(expression)) continue;
+          if (DATEY.test(expression)) offenders.push(`${file}: \${${expression}}`);
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+});
