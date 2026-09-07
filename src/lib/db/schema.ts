@@ -54,6 +54,7 @@ export const REGION_LEVELS = ["country", "admin1", "admin2"] as const;
  *  it years later, which is the only reason the log exists. */
 export const MODERATION_ACTIONS = [
   "statement_removed",
+  "statement_restored",
   "statement_redacted",
   "report_resolved",
   "report_dismissed",
