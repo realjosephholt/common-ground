@@ -29,6 +29,10 @@ import type { CommitmentLevel } from "../discovery/types.js";
 export type ConversationStatus = "open" | "closed" | "archived";
 export type ModerationStatus = "approved" | "pending" | "removed";
 export type ReportStatus = "open" | "resolved" | "dismissed";
+/** Only the levels the vendored extract's format can actually carry. Deeper levels —
+ *  wards, communes — need an extract format that records their codes, so adding one to
+ *  this list without doing that would silently mis-parent every row at that level. */
+export type RegionLevel = (typeof REGION_LEVELS)[number];
 
 /** Weakest to strongest. Used as a gate at the Conversation boundary and nowhere
  *  else — nothing in `src/lib/discovery/` may read a Verification Level (ADR-0003). */
@@ -43,12 +47,29 @@ export const COMMITMENT_LEVELS = ["support", "fund", "show_up", "skill", "organi
 export const CONVERSATION_STATUSES = ["open", "closed", "archived"] as const;
 export const MODERATION_STATUSES = ["approved", "pending", "removed"] as const;
 export const REPORT_STATUSES = ["open", "resolved", "dismissed"] as const;
+export const REGION_LEVELS = ["country", "admin1", "admin2"] as const;
+
+/** Every action that can be written to the Moderation Log. Closed rather than free
+ *  text: a log whose vocabulary drifts cannot be read consistently by whoever audits
+ *  it years later, which is the only reason the log exists. */
+export const MODERATION_ACTIONS = [
+  "statement_removed",
+  "statement_redacted",
+  "report_resolved",
+  "report_dismissed",
+] as const;
+export const MODERATION_SUBJECT_TYPES = ["statement", "report"] as const;
+
+export type ModerationAction = (typeof MODERATION_ACTIONS)[number];
+export type ModerationSubjectType = (typeof MODERATION_SUBJECT_TYPES)[number];
 
 const inList = (column: string, values: readonly string[]): ReturnType<typeof sql> =>
   sql.raw(`${column} in (${values.map((v) => `'${v}'`).join(", ")})`);
 
 /** Present on every table and null on every row until federation exists (ADR-0002).
- *  This is deliberate dead weight, not an abandoned feature. */
+ *  This is deliberate dead weight, not an abandoned feature. Note that `participants`
+ *  nulls it on tombstoning: in a federated world it would narrow a deleted person to
+ *  one Instance, which is precisely the kind of correlation handle ADR-0004 forbids. */
 const originInstance = () => uuid("origin_instance");
 
 // ---------------------------------------------------------------------------
@@ -61,6 +82,7 @@ export const instanceSettings = pgTable(
   "instance_settings",
   {
     id: uuid("id").primaryKey(),
+    originInstance: originInstance(),
     singleton: boolean("singleton").notNull().default(true),
     name: text("name").notNull(),
     /** Default gate applied to new Conversations; an operator may raise it per-Conversation. */
@@ -98,11 +120,11 @@ export const regions = pgTable(
   "regions",
   {
     geonameId: integer("geoname_id").primaryKey(),
+    originInstance: originInstance(),
     name: text("name").notNull(),
     asciiName: text("ascii_name").notNull(),
     countryCode: char("country_code", { length: 2 }).notNull(),
-    /** `country` | `admin1` | `admin2` | `admin3` | `admin4` */
-    level: text("level").notNull(),
+    level: text("level").$type<RegionLevel>().notNull(),
     parentId: integer("parent_id").references((): AnyPgColumn => regions.geonameId, {
       onDelete: "set null",
     }),
@@ -113,6 +135,7 @@ export const regions = pgTable(
     datasetVersion: text("dataset_version").notNull(),
   },
   (t) => [
+    check("regions_level", inList("level", REGION_LEVELS)),
     index("regions_ascii_name").on(t.asciiName),
     index("regions_parent").on(t.parentId),
   ],
@@ -133,6 +156,12 @@ export const regions = pgTable(
  *
  * The `participants_tombstone_is_empty` check is what stops that decaying into folklore:
  * a live Participant must have its required attributes, and a tombstone must have none.
+ *
+ * The check cannot see the one column that has to survive, though. A UUIDv7 carries 48
+ * bits of Unix milliseconds, so a retained `id` would hand back the sign-up time to the
+ * millisecond — an attribute smuggled through the primary key, past a constraint that
+ * only inspects the other columns. So tombstoning rotates the id to a time-free one,
+ * which is why every foreign key here cascades on update.
  */
 export const participants = pgTable(
   "participants",
@@ -213,7 +242,7 @@ export const sessions = pgTable(
     originInstance: originInstance(),
     participantId: uuid("participant_id")
       .notNull()
-      .references(() => participants.id, { onDelete: "cascade" }),
+      .references(() => participants.id, { onDelete: "cascade", onUpdate: "cascade" }),
     tokenHash: text("token_hash").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
@@ -235,10 +264,10 @@ export const vouches = pgTable(
     originInstance: originInstance(),
     voucherId: uuid("voucher_id")
       .notNull()
-      .references(() => participants.id, { onDelete: "cascade" }),
+      .references(() => participants.id, { onDelete: "cascade", onUpdate: "cascade" }),
     subjectId: uuid("subject_id")
       .notNull()
-      .references(() => participants.id, { onDelete: "cascade" }),
+      .references(() => participants.id, { onDelete: "cascade", onUpdate: "cascade" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     revokedAt: timestamp("revoked_at", { withTimezone: true }),
   },
@@ -264,7 +293,7 @@ export const conversations = pgTable(
       .references(() => regions.geonameId, { onDelete: "restrict" }),
     seedTopic: text("seed_topic").notNull(),
     /** Points at the tombstone once the opener deletes their account. */
-    createdBy: uuid("created_by").references(() => participants.id, { onDelete: "set null" }),
+    createdBy: uuid("created_by").references(() => participants.id, { onDelete: "set null", onUpdate: "cascade" }),
     status: text("status").$type<ConversationStatus>().notNull().default("open"),
     minVerificationLevel: text("min_verification_level").$type<VerificationLevel>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -293,7 +322,7 @@ export const statements = pgTable(
     conversationId: uuid("conversation_id")
       .notNull()
       .references(() => conversations.id, { onDelete: "cascade" }),
-    authorId: uuid("author_id").references(() => participants.id, { onDelete: "set null" }),
+    authorId: uuid("author_id").references(() => participants.id, { onDelete: "set null", onUpdate: "cascade" }),
     text: text("text"),
     moderationStatus: text("moderation_status").$type<ModerationStatus>().notNull().default("approved"),
     redactedAt: timestamp("redacted_at", { withTimezone: true }),
@@ -319,7 +348,7 @@ export const votes = pgTable(
     originInstance: originInstance(),
     participantId: uuid("participant_id")
       .notNull()
-      .references(() => participants.id, { onDelete: "cascade" }),
+      .references(() => participants.id, { onDelete: "cascade", onUpdate: "cascade" }),
     statementId: uuid("statement_id")
       .notNull()
       .references(() => statements.id, { onDelete: "cascade" }),
@@ -345,7 +374,7 @@ export const commitments = pgTable(
     originInstance: originInstance(),
     participantId: uuid("participant_id")
       .notNull()
-      .references(() => participants.id, { onDelete: "cascade" }),
+      .references(() => participants.id, { onDelete: "cascade", onUpdate: "cascade" }),
     statementId: uuid("statement_id")
       .notNull()
       .references(() => statements.id, { onDelete: "cascade" }),
@@ -374,12 +403,12 @@ export const reports = pgTable(
     /** Nulled when the reporter deletes their account. A Report is not a shared
      *  artefact anyone's results depend on, so there is nothing to preserve by
      *  keeping it attached to the tombstone. */
-    reporterId: uuid("reporter_id").references(() => participants.id, { onDelete: "set null" }),
+    reporterId: uuid("reporter_id").references(() => participants.id, { onDelete: "set null", onUpdate: "cascade" }),
     reason: text("reason").notNull(),
     status: text("status").$type<ReportStatus>().notNull().default("open"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     resolvedAt: timestamp("resolved_at", { withTimezone: true }),
-    resolvedBy: uuid("resolved_by").references(() => participants.id, { onDelete: "set null" }),
+    resolvedBy: uuid("resolved_by").references(() => participants.id, { onDelete: "set null", onUpdate: "cascade" }),
   },
   (t) => [
     check("reports_status", inList("status", REPORT_STATUSES)),
@@ -407,14 +436,22 @@ export const moderationLog = pgTable(
      *  so this never fires in normal operation — and if something ever tries to
      *  row-delete a moderator it should fail loudly rather than quietly erase who
      *  acted. */
-    actorId: uuid("actor_id").references(() => participants.id, { onDelete: "restrict" }),
-    action: text("action").notNull(),
-    targetType: text("target_type").notNull(),
-    targetId: uuid("target_id").notNull(),
+    actorId: uuid("actor_id").references(() => participants.id, { onDelete: "restrict", onUpdate: "cascade" }),
+    action: text("action").$type<ModerationAction>().notNull(),
+    /** Deliberately not called a Target. CONTEXT.md reserves that word for the
+     *  decision-maker who could grant a Campaign's ask, and reusing it for "the thing
+     *  that was moderated" is exactly the drift the glossary exists to stop. */
+    subjectType: text("subject_type").$type<ModerationSubjectType>().notNull(),
+    subjectId: uuid("subject_id").notNull(),
     reason: text("reason"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("moderation_log_target").on(t.targetType, t.targetId), index("moderation_log_created").on(t.createdAt)],
+  (t) => [
+    check("moderation_log_action", inList("action", MODERATION_ACTIONS)),
+    check("moderation_log_subject_type", inList("subject_type", MODERATION_SUBJECT_TYPES)),
+    index("moderation_log_subject").on(t.subjectType, t.subjectId),
+    index("moderation_log_created").on(t.createdAt),
+  ],
 );
 
 export const schema = {

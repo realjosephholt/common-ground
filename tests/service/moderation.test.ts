@@ -71,7 +71,7 @@ describe("Reports", () => {
 });
 
 describe("the Moderation Log", () => {
-  it("records actor, action, target, reason and timestamp for every action", async () => {
+  it("records actor, action, subject, reason and timestamp for every action", async () => {
     const { opener, statementId } = await aDeliberation(ctx.db);
     const mod = await moderator();
 
@@ -81,8 +81,8 @@ describe("the Moderation Log", () => {
     expect(entry).toMatchObject({
       actorId: mod.participant.id,
       action: "statement_removed",
-      targetType: "statement",
-      targetId: statementId,
+      subjectType: "statement",
+      subjectId: statementId,
       reason: "Breaches the content policy.",
     });
     expect(entry!.createdAt).toBeInstanceOf(Date);

@@ -9,7 +9,7 @@
 
 import { and, eq, sql } from "drizzle-orm";
 
-import { uuidv7 } from "../db/ids.js";
+import { uuidv4, uuidv7 } from "../db/ids.js";
 import { participants, type VerificationLevel } from "../db/schema.js";
 import { encodeGeohash } from "../discovery/geohash.js";
 import { requireActor, ServiceError, type ServiceContext } from "./context.js";
@@ -208,6 +208,12 @@ export async function deleteParticipant(ctx: ServiceContext): Promise<{ tombston
     const [row] = await tx
       .update(participants)
       .set({
+        // The id is rotated, not kept. A UUIDv7 encodes the millisecond it was minted
+        // at, so retaining one would leave the sign-up time readable off the tombstone —
+        // an attribute hiding in the one column that has to survive, where the
+        // `participants_tombstone_is_empty` check cannot reach it. Every foreign key
+        // pointing here cascades on update, so the Votes and Commitments follow.
+        id: uuidv4(),
         originInstance: null,
         email: null,
         displayName: null,

@@ -10,7 +10,7 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
 
 import { uuidv7 } from "../db/ids.js";
-import { statements, STATEMENT_MAX_LENGTH, type ModerationStatus } from "../db/schema.js";
+import { conversations, statements, STATEMENT_MAX_LENGTH, type ModerationStatus } from "../db/schema.js";
 import { composerGuidance, type Guidance } from "../statements/composer.js";
 import { assertMayParticipate } from "./conversations.js";
 import { requireActor, ServiceError, type ServiceContext } from "./context.js";
@@ -79,4 +79,46 @@ export async function listStatements(ctx: ServiceContext, input: ListStatementsI
     .from(statements)
     .where(and(eq(statements.conversationId, input.conversationId), inArray(statements.moderationStatus, statuses)))
     .orderBy(asc(statements.createdAt));
+}
+
+export interface ContributableStatement {
+  statementId: string;
+  conversationId: string;
+}
+
+/**
+ * Check that a Statement will accept a contribution — a Vote, a Commitment — from the
+ * acting Participant.
+ *
+ * Three conditions travel together: the Statement exists, the caller clears its
+ * Conversation's entry gate, and the Conversation is still open. Votes and Commitments
+ * both need all three, and having asked the question in two places is how the two
+ * answers drift.
+ */
+export async function assertStatementAcceptsContributions(
+  ctx: ServiceContext,
+  statementId: string,
+): Promise<ContributableStatement> {
+  const [target] = await ctx.db
+    .select({
+      conversationId: statements.conversationId,
+      moderationStatus: statements.moderationStatus,
+      status: conversations.status,
+    })
+    .from(statements)
+    .innerJoin(conversations, eq(conversations.id, statements.conversationId))
+    .where(eq(statements.id, statementId))
+    .limit(1);
+  if (!target) throw new ServiceError("not_found", "No such Statement.");
+
+  await assertMayParticipate(ctx, target.conversationId);
+
+  if (target.status !== "open") {
+    throw new ServiceError("conflict", `This Conversation is ${target.status} and takes no further contributions.`);
+  }
+  if (target.moderationStatus !== "approved") {
+    throw new ServiceError("conflict", "This Statement has been removed.");
+  }
+
+  return { statementId, conversationId: target.conversationId };
 }

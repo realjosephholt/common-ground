@@ -1,5 +1,5 @@
 {
-  "id": "415b3b60-6a78-4c9d-be63-afe5f81d0924",
+  "id": "1bb8a09f-2f92-4249-ad03-958b2aa0dfd3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -69,7 +69,7 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "cascade"
         },
         "commitments_statement_id_statements_id_fk": {
           "name": "commitments_statement_id_statements_id_fk",
@@ -229,7 +229,7 @@
             "id"
           ],
           "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -256,6 +256,12 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
+        },
+        "origin_instance": {
+          "name": "origin_instance",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         },
         "singleton": {
           "name": "singleton",
@@ -467,14 +473,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "target_type": {
-          "name": "target_type",
+        "subject_type": {
+          "name": "subject_type",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "target_id": {
-          "name": "target_id",
+        "subject_id": {
+          "name": "subject_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -494,17 +500,17 @@
         }
       },
       "indexes": {
-        "moderation_log_target": {
-          "name": "moderation_log_target",
+        "moderation_log_subject": {
+          "name": "moderation_log_subject",
           "columns": [
             {
-              "expression": "target_type",
+              "expression": "subject_type",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             },
             {
-              "expression": "target_id",
+              "expression": "subject_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -543,13 +549,22 @@
             "id"
           ],
           "onDelete": "restrict",
-          "onUpdate": "no action"
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "moderation_log_action": {
+          "name": "moderation_log_action",
+          "value": "action in ('statement_removed', 'statement_redacted', 'report_resolved', 'report_dismissed')"
+        },
+        "moderation_log_subject_type": {
+          "name": "moderation_log_subject_type",
+          "value": "subject_type in ('statement', 'report')"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.participants": {
@@ -679,6 +694,12 @@
           "primaryKey": true,
           "notNull": true
         },
+        "origin_instance": {
+          "name": "origin_instance",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "name": {
           "name": "name",
           "type": "text",
@@ -778,7 +799,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "regions_level": {
+          "name": "regions_level",
+          "value": "level in ('country', 'admin1', 'admin2')"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.reports": {
@@ -899,7 +925,7 @@
             "id"
           ],
           "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "cascade"
         },
         "reports_resolved_by_participants_id_fk": {
           "name": "reports_resolved_by_participants_id_fk",
@@ -912,7 +938,7 @@
             "id"
           ],
           "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1018,7 +1044,7 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1124,7 +1150,7 @@
             "id"
           ],
           "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1218,7 +1244,7 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "cascade"
         },
         "votes_statement_id_statements_id_fk": {
           "name": "votes_statement_id_statements_id_fk",
@@ -1346,7 +1372,7 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "cascade"
         },
         "vouches_subject_id_participants_id_fk": {
           "name": "vouches_subject_id_participants_id_fk",
@@ -1359,7 +1385,7 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},

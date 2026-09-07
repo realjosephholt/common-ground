@@ -79,7 +79,7 @@ describe("a Vote whose author leaves (ADR-0004)", () => {
     const { opener, statementId } = await aDeliberation(ctx.db);
     await castVote(opener.ctx, { statementId, value: 1 });
 
-    await deleteParticipant(opener.ctx);
+    const { tombstoneId } = await deleteParticipant(opener.ctx);
 
     const [row] = await queryRows<{ participant_id: string; value: number }>(
       ctx.db,
@@ -88,7 +88,7 @@ describe("a Vote whose author leaves (ADR-0004)", () => {
     // Erasing it would retroactively rewrite consensus other people relied on, and in a
     // small Conversation could shrink an Opinion Group enough to identify its members.
     expect(row?.value).toBe(1);
-    expect(row?.participant_id).toBe(opener.participant.id);
+    expect(row?.participant_id).toBe(tombstoneId);
   });
 });
 

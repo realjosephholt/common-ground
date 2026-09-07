@@ -49,3 +49,22 @@ export function uuidv7(now: number = Date.now()): string {
   const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
+
+/**
+ * An identifier with nothing in it.
+ *
+ * A tombstone keeps its primary key — that is the whole point of a tombstone — so the
+ * key itself must carry no information. A UUIDv7 fails that test badly: its first 48
+ * bits are the Unix millisecond it was minted at, so a retained v7 id hands back the
+ * moment the deleted person signed up, exactly the correlation handle ADR-0004 forbids.
+ * It slips past a check constraint on the other columns because the constraint cannot
+ * see inside a key.
+ *
+ * So tombstoning rotates the id to a v4, which is 122 bits of randomness and nothing
+ * else. That is a deliberate exception to ADR-0002's "UUIDv7 everywhere": v7 is there
+ * for index locality as an Instance grows, and tombstones neither sort meaningfully nor
+ * benefit from pretending to.
+ */
+export function uuidv4(): string {
+  return crypto.randomUUID();
+}

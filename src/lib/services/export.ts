@@ -16,14 +16,30 @@ import { queryRows } from "../db/client.js";
 import {
   commitments,
   conversations,
+  magicLinkTokens,
   moderationLog,
   reports,
+  sessions,
   statements,
   votes,
   vouches,
 } from "../db/schema.js";
 import { requireActor, ServiceError, type ServiceContext } from "./context.js";
 import { findLiveParticipantById, toParticipantView, type ParticipantView } from "./participants.js";
+
+export interface SessionSummary {
+  id: string;
+  createdAt: Date;
+  expiresAt: Date;
+  revokedAt: Date | null;
+}
+
+export interface SignInLinkSummary {
+  id: string;
+  createdAt: Date;
+  expiresAt: Date;
+  consumedAt: Date | null;
+}
 
 export interface ParticipantExport {
   exportedAt: string;
@@ -36,6 +52,10 @@ export interface ParticipantExport {
   commitments: (typeof commitments.$inferSelect)[];
   reportsFiled: (typeof reports.$inferSelect)[];
   moderationActions: (typeof moderationLog.$inferSelect)[];
+  /** Token hashes are omitted: they are credentials, and handing someone a file that
+   *  can sign them in is a worse trade than a slightly less complete export. */
+  sessions: SessionSummary[];
+  outstandingSignInLinks: SignInLinkSummary[];
   /** What deleting this account would actually do, stated plainly rather than promised. */
   whatDeletionWouldDo: string[];
 }
@@ -70,6 +90,8 @@ export async function exportMyData(ctx: ServiceContext): Promise<ParticipantExpo
     pledged,
     filed,
     moderationActions,
+    openSessions,
+    signInLinks,
   ] = await Promise.all([
     ctx.db.select().from(vouches).where(eq(vouches.voucherId, actor.id)),
     ctx.db.select().from(vouches).where(eq(vouches.subjectId, actor.id)),
@@ -79,6 +101,24 @@ export async function exportMyData(ctx: ServiceContext): Promise<ParticipantExpo
     ctx.db.select().from(commitments).where(eq(commitments.participantId, actor.id)),
     ctx.db.select().from(reports).where(or(eq(reports.reporterId, actor.id), eq(reports.resolvedBy, actor.id))),
     ctx.db.select().from(moderationLog).where(eq(moderationLog.actorId, actor.id)),
+    ctx.db
+      .select({
+        id: sessions.id,
+        createdAt: sessions.createdAt,
+        expiresAt: sessions.expiresAt,
+        revokedAt: sessions.revokedAt,
+      })
+      .from(sessions)
+      .where(eq(sessions.participantId, actor.id)),
+    ctx.db
+      .select({
+        id: magicLinkTokens.id,
+        createdAt: magicLinkTokens.createdAt,
+        expiresAt: magicLinkTokens.expiresAt,
+        consumedAt: magicLinkTokens.consumedAt,
+      })
+      .from(magicLinkTokens)
+      .where(eq(magicLinkTokens.email, row.email!)),
   ]);
 
   return {
@@ -92,6 +132,8 @@ export async function exportMyData(ctx: ServiceContext): Promise<ParticipantExpo
     commitments: pledged,
     reportsFiled: filed,
     moderationActions,
+    sessions: openSessions,
+    outstandingSignInLinks: signInLinks,
     whatDeletionWouldDo: DELETION_NOTES,
   };
 }

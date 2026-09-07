@@ -194,13 +194,13 @@ describe("a Conversation whose opener leaves", () => {
     const person = await organiser();
     const opened = await openConversation(person.ctx, { regionId: FIXTURE_REGIONS.illinois, seedTopic: "Outlives" });
 
-    await deleteParticipant(person.ctx);
+    const { tombstoneId } = await deleteParticipant(person.ctx);
 
     const [row] = await queryRows<{ created_by: string | null; seed_topic: string }>(
       ctx.db,
       sql`select created_by, seed_topic from conversations where id = ${opened.id}`,
     );
     expect(row?.seed_topic).toBe("Outlives");
-    expect(row?.created_by).toBe(person.participant.id);
+    expect(row?.created_by).toBe(tombstoneId);
   });
 });

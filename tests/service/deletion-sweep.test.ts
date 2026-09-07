@@ -87,10 +87,18 @@ describe("the deletion sweep", () => {
     expect(exported.reportsFiled).toHaveLength(1);
     expect(exported.whatDeletionWouldDo.join(" ")).toContain("tombstone");
 
-    const id = opener.participant.id;
+    // The Instance holds these about them too, and an export that claims to be
+    // everything has to include them. Token hashes are deliberately not in the shape:
+    // handing someone a file that can sign them in is a worse trade than omitting it.
+    expect(exported.sessions.length).toBeGreaterThan(0);
+    expect(exported.outstandingSignInLinks.length).toBeGreaterThan(0);
+    expect(JSON.stringify(exported)).not.toContain("tokenHash");
 
     // ---- delete ------------------------------------------------------------
-    await deleteParticipant(opener.ctx);
+    // The identifier rotates: a UUIDv7 encodes its mint time, so keeping one would
+    // leave the sign-up moment readable off the tombstone.
+    const { tombstoneId: id } = await deleteParticipant(opener.ctx);
+    expect(id).not.toBe(opener.participant.id);
 
     // ---- verify ------------------------------------------------------------
     const [tombstone] = await queryRows<Record<string, unknown>>(
@@ -160,6 +168,13 @@ describe("the deletion sweep", () => {
     // correlation handle.
     const shapes = rows.map((row) => JSON.stringify({ ...row, id: null }));
     expect(new Set(shapes).size).toBe(1);
+
+    // Nulling `id` above would hide a timestamp encoded inside it, so check it
+    // separately rather than assuming the columns are the whole story.
+    for (const row of rows) {
+      const hex = String(row["id"]).replace(/-/g, "");
+      expect(hex[12]).toBe("4");
+    }
   });
 
   it("keeps a departed moderator's actions in the public log", async () => {

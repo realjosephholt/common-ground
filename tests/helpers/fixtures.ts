@@ -51,6 +51,9 @@ export async function signUp(
 export const REGION_FIXTURE = [
   "geoname_id\tname\tascii_name\tcountry_code\tlevel\tadmin1_code\tadmin2_code",
   "6252001\tUnited States\tUnited States\tUS\tcountry\t\t",
+  // A real pair whose relevance order and geonameId order disagree: searching "United
+  // States" must not put the Minor Outlying Islands first just because 5854968 < 6252001.
+  "5854968\tUnited States Minor Outlying Islands\tUnited States Minor Outlying Islands\tUM\tcountry\t\t",
   "4896861\tIllinois\tIllinois\tUS\tadmin1\tIL\t",
   "4398678\tMissouri\tMissouri\tUS\tadmin1\tMO\t",
   "4250542\tSpringfield\tSpringfield\tUS\tadmin2\tIL\t167",
@@ -59,6 +62,7 @@ export const REGION_FIXTURE = [
 
 export const FIXTURE_REGIONS = {
   unitedStates: 6252001,
+  minorOutlyingIslands: 5854968,
   illinois: 4896861,
   missouri: 4398678,
   springfieldIllinois: 4250542,

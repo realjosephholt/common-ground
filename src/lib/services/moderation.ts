@@ -13,7 +13,14 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 
 import { uuidv7 } from "../db/ids.js";
-import { moderationLog, reports, statements, type ReportStatus } from "../db/schema.js";
+import {
+  moderationLog,
+  reports,
+  statements,
+  type ModerationAction,
+  type ModerationSubjectType,
+  type ReportStatus,
+} from "../db/schema.js";
 import { meetsVerificationLevel, requireActor, ServiceError, type ServiceContext } from "./context.js";
 
 export type ReportView = typeof reports.$inferSelect;
@@ -39,7 +46,13 @@ function requireModerator(ctx: ServiceContext) {
 /** The only way anything is ever written to the log. */
 async function appendToLog(
   ctx: ServiceContext,
-  entry: { actorId: string | null; action: string; targetType: string; targetId: string; reason?: string | null },
+  entry: {
+    actorId: string | null;
+    action: ModerationAction;
+    subjectType: ModerationSubjectType;
+    subjectId: string;
+    reason?: string | null;
+  },
 ): Promise<ModerationLogEntry> {
   const now = ctx.now();
   const [written] = await ctx.db
@@ -48,8 +61,8 @@ async function appendToLog(
       id: uuidv7(now.getTime()),
       actorId: entry.actorId,
       action: entry.action,
-      targetType: entry.targetType,
-      targetId: entry.targetId,
+      subjectType: entry.subjectType,
+      subjectId: entry.subjectId,
       reason: entry.reason ?? null,
       createdAt: now,
     })
@@ -119,8 +132,8 @@ export async function resolveReport(ctx: ServiceContext, input: ResolveReportInp
   await appendToLog(ctx, {
     actorId: actor.id,
     action: input.outcome === "dismissed" ? "report_dismissed" : "report_resolved",
-    targetType: "report",
-    targetId: input.reportId,
+    subjectType: "report",
+    subjectId: input.reportId,
     reason: input.reason,
   });
   return updated;
@@ -145,30 +158,8 @@ export async function removeStatement(
   await appendToLog(ctx, {
     actorId: actor.id,
     action: "statement_removed",
-    targetType: "statement",
-    targetId: input.statementId,
-    reason: input.reason,
-  });
-}
-
-export async function restoreStatement(
-  ctx: ServiceContext,
-  input: { statementId: string; reason: string },
-): Promise<void> {
-  const actor = requireModerator(ctx);
-
-  const [updated] = await ctx.db
-    .update(statements)
-    .set({ moderationStatus: "approved" })
-    .where(eq(statements.id, input.statementId))
-    .returning();
-  if (!updated) throw new ServiceError("not_found", "No such Statement.");
-
-  await appendToLog(ctx, {
-    actorId: actor.id,
-    action: "statement_restored",
-    targetType: "statement",
-    targetId: input.statementId,
+    subjectType: "statement",
+    subjectId: input.statementId,
     reason: input.reason,
   });
 }
@@ -217,8 +208,8 @@ export async function redactStatement(
   await appendToLog(ctx, {
     actorId: actor.id,
     action: "statement_redacted",
-    targetType: "statement",
-    targetId: input.statementId,
+    subjectType: "statement",
+    subjectId: input.statementId,
     reason: input.reason ?? (isAuthor ? "Requested by the author." : null),
   });
 }

@@ -10,7 +10,7 @@
 import { sql } from "drizzle-orm";
 
 import { queryRows } from "../db/client.js";
-import { regions } from "../db/schema.js";
+import { REGION_LEVELS, regions } from "../db/schema.js";
 import {
   keyOf,
   parentKeyOf,
@@ -22,8 +22,8 @@ import type { ServiceContext } from "./context.js";
 
 /** Countries first, then each administrative level in turn. Seeding in this order means
  *  a row's parent is always already present, so the self-referencing foreign key never
- *  has to be deferred. */
-const LEVEL_ORDER: RegionLevel[] = ["country", "admin1", "admin2", "admin3", "admin4"];
+ *  has to be deferred. `REGION_LEVELS` is declared shallowest-first for exactly this. */
+const LEVEL_ORDER: readonly RegionLevel[] = REGION_LEVELS;
 
 const INSERT_CHUNK = 1000;
 
@@ -115,6 +115,7 @@ export interface RegionSearchResult {
 
 interface ChainRow {
   root: number;
+  rank: number;
   geoname_id: number;
   name: string;
   level: string;
@@ -142,25 +143,31 @@ export async function searchRegions(
     ctx.db,
     sql`
       with recursive matched as (
-        select geoname_id
+        select geoname_id,
+               row_number() over (
+                 order by (lower(ascii_name) = lower(${term})) desc, length(name), name
+               ) as rank
         from regions
         where ascii_name ilike ${prefix} or name ilike ${prefix}
-        order by (lower(ascii_name) = lower(${term})) desc, length(name), name
+        order by rank
         limit ${limit}
       ),
       chain as (
-        select m.geoname_id as root, r.geoname_id, r.name, r.level, r.country_code, 0 as depth, r.parent_id
+        select m.geoname_id as root, m.rank, r.geoname_id, r.name, r.level, r.country_code, 0 as depth, r.parent_id
         from matched m
         join regions r on r.geoname_id = m.geoname_id
         union all
-        select c.root, p.geoname_id, p.name, p.level, p.country_code, c.depth + 1, p.parent_id
+        select c.root, c.rank, p.geoname_id, p.name, p.level, p.country_code, c.depth + 1, p.parent_id
         from chain c
         join regions p on p.geoname_id = c.parent_id
       )
-      select root, geoname_id, name, level, country_code, depth from chain order by root, depth
+      -- Ordered by rank, not by root: grouping on the identifier would sort results by
+      -- geonameId and throw away the relevance the CTE just computed.
+      select root, rank, geoname_id, name, level, country_code, depth from chain order by rank, depth
     `,
   );
 
+  // Insertion order is the ranked order, and a Map preserves it.
   const byRoot = new Map<number, ChainRow[]>();
   for (const row of rows) {
     const bucket = byRoot.get(row.root);

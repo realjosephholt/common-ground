@@ -25,6 +25,7 @@ CREATE TABLE "conversations" (
 --> statement-breakpoint
 CREATE TABLE "instance_settings" (
 	"id" uuid PRIMARY KEY NOT NULL,
+	"origin_instance" uuid,
 	"singleton" boolean DEFAULT true NOT NULL,
 	"name" text NOT NULL,
 	"default_min_verification_level" text DEFAULT 'vouched' NOT NULL,
@@ -53,10 +54,12 @@ CREATE TABLE "moderation_log" (
 	"origin_instance" uuid,
 	"actor_id" uuid,
 	"action" text NOT NULL,
-	"target_type" text NOT NULL,
-	"target_id" uuid NOT NULL,
+	"subject_type" text NOT NULL,
+	"subject_id" uuid NOT NULL,
 	"reason" text,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "moderation_log_action" CHECK (action in ('statement_removed', 'statement_redacted', 'report_resolved', 'report_dismissed')),
+	CONSTRAINT "moderation_log_subject_type" CHECK (subject_type in ('statement', 'report'))
 );
 --> statement-breakpoint
 CREATE TABLE "participants" (
@@ -93,6 +96,7 @@ CREATE TABLE "participants" (
 --> statement-breakpoint
 CREATE TABLE "regions" (
 	"geoname_id" integer PRIMARY KEY NOT NULL,
+	"origin_instance" uuid,
 	"name" text NOT NULL,
 	"ascii_name" text NOT NULL,
 	"country_code" char(2) NOT NULL,
@@ -100,7 +104,8 @@ CREATE TABLE "regions" (
 	"parent_id" integer,
 	"admin1_code" text,
 	"admin2_code" text,
-	"dataset_version" text NOT NULL
+	"dataset_version" text NOT NULL,
+	CONSTRAINT "regions_level" CHECK (level in ('country', 'admin1', 'admin2'))
 );
 --> statement-breakpoint
 CREATE TABLE "reports" (
@@ -161,30 +166,30 @@ CREATE TABLE "vouches" (
 	CONSTRAINT "vouches_not_self" CHECK ("vouches"."voucher_id" <> "vouches"."subject_id")
 );
 --> statement-breakpoint
-ALTER TABLE "commitments" ADD CONSTRAINT "commitments_participant_id_participants_id_fk" FOREIGN KEY ("participant_id") REFERENCES "public"."participants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "commitments" ADD CONSTRAINT "commitments_participant_id_participants_id_fk" FOREIGN KEY ("participant_id") REFERENCES "public"."participants"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "commitments" ADD CONSTRAINT "commitments_statement_id_statements_id_fk" FOREIGN KEY ("statement_id") REFERENCES "public"."statements"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "conversations" ADD CONSTRAINT "conversations_region_id_regions_geoname_id_fk" FOREIGN KEY ("region_id") REFERENCES "public"."regions"("geoname_id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "conversations" ADD CONSTRAINT "conversations_created_by_participants_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."participants"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "moderation_log" ADD CONSTRAINT "moderation_log_actor_id_participants_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."participants"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "conversations" ADD CONSTRAINT "conversations_created_by_participants_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."participants"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "moderation_log" ADD CONSTRAINT "moderation_log_actor_id_participants_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."participants"("id") ON DELETE restrict ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "participants" ADD CONSTRAINT "participants_region_id_regions_geoname_id_fk" FOREIGN KEY ("region_id") REFERENCES "public"."regions"("geoname_id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "regions" ADD CONSTRAINT "regions_parent_id_regions_geoname_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."regions"("geoname_id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reports" ADD CONSTRAINT "reports_statement_id_statements_id_fk" FOREIGN KEY ("statement_id") REFERENCES "public"."statements"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "reports" ADD CONSTRAINT "reports_reporter_id_participants_id_fk" FOREIGN KEY ("reporter_id") REFERENCES "public"."participants"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "reports" ADD CONSTRAINT "reports_resolved_by_participants_id_fk" FOREIGN KEY ("resolved_by") REFERENCES "public"."participants"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_participant_id_participants_id_fk" FOREIGN KEY ("participant_id") REFERENCES "public"."participants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "reports" ADD CONSTRAINT "reports_reporter_id_participants_id_fk" FOREIGN KEY ("reporter_id") REFERENCES "public"."participants"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "reports" ADD CONSTRAINT "reports_resolved_by_participants_id_fk" FOREIGN KEY ("resolved_by") REFERENCES "public"."participants"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_participant_id_participants_id_fk" FOREIGN KEY ("participant_id") REFERENCES "public"."participants"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "statements" ADD CONSTRAINT "statements_conversation_id_conversations_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "statements" ADD CONSTRAINT "statements_author_id_participants_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."participants"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "votes" ADD CONSTRAINT "votes_participant_id_participants_id_fk" FOREIGN KEY ("participant_id") REFERENCES "public"."participants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "statements" ADD CONSTRAINT "statements_author_id_participants_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."participants"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "votes" ADD CONSTRAINT "votes_participant_id_participants_id_fk" FOREIGN KEY ("participant_id") REFERENCES "public"."participants"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "votes" ADD CONSTRAINT "votes_statement_id_statements_id_fk" FOREIGN KEY ("statement_id") REFERENCES "public"."statements"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "vouches" ADD CONSTRAINT "vouches_voucher_id_participants_id_fk" FOREIGN KEY ("voucher_id") REFERENCES "public"."participants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "vouches" ADD CONSTRAINT "vouches_subject_id_participants_id_fk" FOREIGN KEY ("subject_id") REFERENCES "public"."participants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "vouches" ADD CONSTRAINT "vouches_voucher_id_participants_id_fk" FOREIGN KEY ("voucher_id") REFERENCES "public"."participants"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "vouches" ADD CONSTRAINT "vouches_subject_id_participants_id_fk" FOREIGN KEY ("subject_id") REFERENCES "public"."participants"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 CREATE INDEX "commitments_statement" ON "commitments" USING btree ("statement_id");--> statement-breakpoint
 CREATE INDEX "conversations_region" ON "conversations" USING btree ("region_id");--> statement-breakpoint
 CREATE INDEX "conversations_status_idx" ON "conversations" USING btree ("status");--> statement-breakpoint
 CREATE UNIQUE INDEX "instance_settings_singleton" ON "instance_settings" USING btree ("singleton");--> statement-breakpoint
 CREATE UNIQUE INDEX "magic_link_tokens_hash" ON "magic_link_tokens" USING btree ("token_hash");--> statement-breakpoint
 CREATE INDEX "magic_link_tokens_email" ON "magic_link_tokens" USING btree ("email");--> statement-breakpoint
-CREATE INDEX "moderation_log_target" ON "moderation_log" USING btree ("target_type","target_id");--> statement-breakpoint
+CREATE INDEX "moderation_log_subject" ON "moderation_log" USING btree ("subject_type","subject_id");--> statement-breakpoint
 CREATE INDEX "moderation_log_created" ON "moderation_log" USING btree ("created_at");--> statement-breakpoint
 CREATE UNIQUE INDEX "participants_email" ON "participants" USING btree ("email");--> statement-breakpoint
 CREATE INDEX "regions_ascii_name" ON "regions" USING btree ("ascii_name");--> statement-breakpoint

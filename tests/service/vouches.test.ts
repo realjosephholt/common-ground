@@ -93,6 +93,28 @@ describe("the outstanding-Vouch cap", () => {
     });
   });
 
+  /**
+   * The service check exists to give a useful message; it cannot be the cap. Two
+   * concurrent requests both read four outstanding Vouches and both insert. So the
+   * insert is driven straight at the table here, bypassing the service entirely.
+   */
+  it("is enforced by the database, not only by the service", async () => {
+    const voucher = await verified("Voucher");
+    const subjects = [];
+    for (let i = 0; i < MAX_OUTSTANDING_VOUCHES + 1; i++) subjects.push(await participant(`S${i}`));
+
+    for (const subject of subjects.slice(0, MAX_OUTSTANDING_VOUCHES)) {
+      await vouchFor(voucher.ctx, { subjectId: subject.participant.id });
+    }
+
+    await expect(
+      ctx.db.execute(
+        sql`insert into vouches (id, voucher_id, subject_id)
+            values (gen_random_uuid(), ${voucher.participant.id}, ${subjects.at(-1)!.participant.id})`,
+      ),
+    ).rejects.toThrow();
+  });
+
   it("frees capacity when a Vouch is revoked", async () => {
     const voucher = await verified("Voucher");
     const subjects = [];
@@ -166,12 +188,12 @@ describe("Vouches touching a tombstone", () => {
     await vouchFor(b.ctx, { subjectId: subject.participant.id });
     expect(await levelOf(subject.participant.id)).toBe("vouched");
 
-    await deleteParticipant(a.ctx);
+    const { tombstoneId } = await deleteParticipant(a.ctx);
 
     expect(await levelOf(subject.participant.id)).toBe("email");
     const [live] = await queryRows<{ count: number }>(
       ctx.db,
-      sql`select count(*)::int as count from vouches where voucher_id = ${a.participant.id} and revoked_at is null`,
+      sql`select count(*)::int as count from vouches where voucher_id = ${tombstoneId} and revoked_at is null`,
     );
     expect(Number(live?.count)).toBe(0);
   });
@@ -180,11 +202,11 @@ describe("Vouches touching a tombstone", () => {
     const a = await verified("A");
     const subject = await participant("Subject");
     await vouchFor(a.ctx, { subjectId: subject.participant.id });
-    await deleteParticipant(a.ctx);
+    const { tombstoneId } = await deleteParticipant(a.ctx);
 
     const [count] = await queryRows<{ count: number }>(
       ctx.db,
-      sql`select count(*)::int as count from vouches where voucher_id = ${a.participant.id}`,
+      sql`select count(*)::int as count from vouches where voucher_id = ${tombstoneId}`,
     );
     expect(Number(count?.count)).toBe(1);
   });

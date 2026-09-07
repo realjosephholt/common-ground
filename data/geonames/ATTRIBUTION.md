@@ -32,8 +32,14 @@ vendor at all.
 Countries, first-level administrative divisions (states, regions, provinces) and
 second-level ones (counties, districts). Wards and communes are not included: GeoNames
 publishes them only inside the full 380MB dump, and nothing in the product needs them
-yet. The seeder is level-agnostic, so a fuller extract in the same shape drops in
-without a code change.
+yet.
+
+Going deeper is not a drop-in. Parents are resolved from the administrative codes, and
+this format carries `admin1_code` and `admin2_code` only — so an `admin3` row would key
+the same as an `admin2` one and be parented under the wrong place, silently. Adding a
+level means adding its code column here, adding it to `REGION_LEVELS` in
+`src/lib/db/schema.ts`, and adding a case to `keyOf`/`parentKeyOf`. The parser refuses
+levels it cannot key rather than guessing, so a mismatch fails loudly at seed time.
 
 ## Bumping the version
 

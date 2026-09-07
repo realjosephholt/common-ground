@@ -10,10 +10,11 @@
 import { and, eq, sql } from "drizzle-orm";
 
 import { queryRows } from "../db/client.js";
-import { conversations, statements, votes } from "../db/schema.js";
+import { conversations, votes } from "../db/schema.js";
 import type { VoteValue } from "../discovery/types.js";
-import { assertMayParticipate } from "./conversations.js";
-import { requireActor, ServiceError, type ServiceContext } from "./context.js";
+import { LEGAL_TRANSITIONS } from "./conversations.js";
+import { assertStatementAcceptsContributions } from "./statements.js";
+import { requireActor, type ServiceContext } from "./context.js";
 import { getInstanceSettings } from "./instance.js";
 
 export type VoteView = typeof votes.$inferSelect;
@@ -37,26 +38,7 @@ export async function castVote(
 ): Promise<VoteView> {
   const actor = requireActor(ctx);
 
-  const [target] = await ctx.db
-    .select({
-      conversationId: statements.conversationId,
-      moderationStatus: statements.moderationStatus,
-      status: conversations.status,
-    })
-    .from(statements)
-    .innerJoin(conversations, eq(conversations.id, statements.conversationId))
-    .where(eq(statements.id, input.statementId))
-    .limit(1);
-  if (!target) throw new ServiceError("not_found", "No such Statement.");
-
-  await assertMayParticipate(ctx, target.conversationId);
-
-  if (target.status !== "open") {
-    throw new ServiceError("conflict", `This Conversation is ${target.status} and takes no Votes.`);
-  }
-  if (target.moderationStatus !== "approved") {
-    throw new ServiceError("conflict", "This Statement has been removed and cannot be voted on.");
-  }
+  await assertStatementAcceptsContributions(ctx, input.statementId);
 
   const now = ctx.now();
   const [cast] = await ctx.db
@@ -114,6 +96,13 @@ export async function archiveSilentConversations(ctx: ServiceContext): Promise<A
   const settings = await getInstanceSettings(ctx);
   const now = ctx.now();
   const cutoff = new Date(now.getTime() - settings.archiveSilentConversationsAfterDays * 86_400_000);
+
+  // Asserted rather than assumed: the lifecycle table in `conversations.ts` stays the
+  // single statement of which moves are legal, so a change there cannot leave this
+  // sweep quietly making an illegal one.
+  if (!LEGAL_TRANSITIONS.open.includes("archived")) {
+    throw new Error("open -> archived is no longer a legal transition; the silent-Conversation sweep needs revisiting.");
+  }
 
   return ctx.db
     .update(conversations)

@@ -34,7 +34,7 @@ export type ConversationView = typeof conversations.$inferSelect;
  * Votes in fourteen days is archived automatically without ever being closed, because
  * closing is a statement about a deliberation that happened and nothing happened here.
  */
-const LEGAL_TRANSITIONS: Record<ConversationStatus, ConversationStatus[]> = {
+export const LEGAL_TRANSITIONS: Record<ConversationStatus, ConversationStatus[]> = {
   open: ["closed", "archived"],
   closed: ["archived"],
   archived: [],
@@ -229,8 +229,12 @@ export async function listConversations(
 }
 
 /**
- * The entry gate, and the only place a Verification Level is ever consulted for a
- * decision (ADR-0003). Everything that writes into a Conversation goes through here.
+ * The entry gate. Everything that writes into a Conversation goes through here, so that
+ * "who may take part" is answered once rather than per feature.
+ *
+ * It is not the only place a Verification Level is read — opening a Conversation,
+ * moving one, and moderating all consult it too. What ADR-0003 forbids is the scoring
+ * path reading it, and `tests/unit/architecture.test.ts` is what checks that.
  */
 export async function assertMayParticipate(
   ctx: ServiceContext,

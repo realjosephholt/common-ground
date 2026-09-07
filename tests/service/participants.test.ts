@@ -68,11 +68,11 @@ describe("deletion (ADR-0004)", () => {
     const signedIn = await signUp(ctx.db, { email: "ida@example.org", displayName: "Ida" });
     await setLocation(signedIn.ctx, { latitude: 51.5072, longitude: -0.1276 });
 
-    await deleteParticipant(signedIn.ctx);
+    const { tombstoneId } = await deleteParticipant(signedIn.ctx);
 
     const rows = await queryRows<Record<string, unknown>>(
       ctx.db,
-      sql`select * from participants where id = ${signedIn.participant.id}`,
+      sql`select * from participants where id = ${tombstoneId}`,
     );
     expect(rows).toHaveLength(1);
 
@@ -153,5 +153,32 @@ describe("deletion (ADR-0004)", () => {
         sql`update participants set tombstoned = true where id = ${stillThere.participant.id}`,
       ),
     ).rejects.toThrow();
+  });
+
+  /**
+   * The identifier is the one column a tombstone has to keep, so it is the one column
+   * the `participants_tombstone_is_empty` check cannot police — and a UUIDv7 carries 48
+   * bits of Unix milliseconds. A retained v7 id would hand back the sign-up time to the
+   * millisecond: an attribute smuggled through the primary key, past a constraint that
+   * only inspects the others.
+   */
+  it("rotates the identifier, so the tombstone does not carry a sign-up time", async () => {
+    const signedIn = await signUp(ctx.db, { email: "clock@example.org", displayName: "Clock" });
+    const liveId = signedIn.participant.id;
+
+    const { tombstoneId } = await deleteParticipant(signedIn.ctx);
+
+    expect(tombstoneId).not.toBe(liveId);
+
+    // A v7's first 48 bits are the mint time; a v4's are random. Reading a plausible
+    // recent date out of the tombstone's id is the failure this guards against.
+    const versionNibble = tombstoneId.replace(/-/g, "")[12];
+    expect(versionNibble).toBe("4");
+
+    const encodedMs = parseInt(tombstoneId.replace(/-/g, "").slice(0, 12), 16);
+    expect(Math.abs(encodedMs - Date.now())).toBeGreaterThan(365 * 86_400_000);
+
+    // And the live id really did encode one, so the test above is not vacuous.
+    expect(Math.abs(parseInt(liveId.replace(/-/g, "").slice(0, 12), 16) - Date.now())).toBeLessThan(60_000);
   });
 });

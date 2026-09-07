@@ -17,7 +17,7 @@ function context() {
 describe("seeding Regions", () => {
   it("populates Regions with their parent relationships", async () => {
     const result = await seedRegions(context(), { rows: parseRegionExtract(REGION_FIXTURE), version: "fixture-1" });
-    expect(result.inserted).toBe(5);
+    expect(result.inserted).toBe(6);
 
     const rows = await queryRows<{ name: string; parent: string | null }>(
       ctx.db,
@@ -36,7 +36,7 @@ describe("seeding Regions", () => {
     await seedRegions(context(), { rows, version: "fixture-2" });
 
     const [count] = await queryRows<{ count: number }>(ctx.db, sql`select count(*)::int as count from regions`);
-    expect(Number(count?.count)).toBe(5);
+    expect(Number(count?.count)).toBe(6);
   });
 
   it("keys Regions on geonameId and never on the administrative codes", async () => {
@@ -60,6 +60,22 @@ describe("finding a Region", () => {
       "Springfield, Missouri, United States",
     ]);
     expect(results[0]!.parents.map((p) => p.name)).toHaveLength(2);
+  });
+
+  /** The parent chain is built with a recursive CTE, and the obvious way to reassemble
+   *  it — group by the matched row's identifier — silently re-sorts results by
+   *  geonameId and throws the relevance away. */
+  it("puts an exact match first, ahead of longer names that merely start the same", async () => {
+    await seedRegions(context(), { rows: parseRegionExtract(REGION_FIXTURE), version: "fixture-1" });
+
+    const results = await searchRegions(context(), { query: "United States" });
+
+    // "United States Minor Outlying Islands" has the lower geonameId of the two, so
+    // reassembling the parent chains by grouping on that identifier would put it first.
+    expect(results.map((r) => r.name)).toEqual([
+      "United States",
+      "United States Minor Outlying Islands",
+    ]);
   });
 
   it("matches a prefix, case-insensitively", async () => {

@@ -111,13 +111,13 @@ describe("a Commitment whose author leaves", () => {
     const { opener, statementId } = await aDeliberation(ctx.db);
     await commitTo(opener.ctx, { statementId, level: "skill" });
 
-    await deleteParticipant(opener.ctx);
+    const { tombstoneId } = await deleteParticipant(opener.ctx);
 
     const [row] = await queryRows<{ participant_id: string; level: string }>(
       ctx.db,
       sql`select participant_id, level from commitments where statement_id = ${statementId}`,
     );
     expect(row?.level).toBe("skill");
-    expect(row?.participant_id).toBe(opener.participant.id);
+    expect(row?.participant_id).toBe(tombstoneId);
   });
 });

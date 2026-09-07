@@ -19,7 +19,13 @@ import { requireActor, ServiceError, type ServiceContext } from "./context.js";
 
 /** Bounds how much a single compromised account can manufacture. Five is what makes
  *  the non-cascading revocation in ADR-0008 affordable: the blast radius is capped
- *  without needing a cascade to clean up after it. */
+ *  without needing a cascade to clean up after it.
+ *
+ *  Enforced here *and* by a trigger in migration 0002. The check below exists to give a
+ *  useful message; the trigger exists because this one cannot be trusted on its own —
+ *  two concurrent requests both read four outstanding Vouches and both insert. An
+ *  attacker racing the cap is exactly the case it has to survive, so the two must stay
+ *  in step, and `tests/service/vouches.test.ts` drives the trigger from this constant. */
 export const MAX_OUTSTANDING_VOUCHES = 5;
 
 /** Two, so that no single account is a gateway. */

@@ -14,28 +14,13 @@
 
 import { and, eq } from "drizzle-orm";
 
-import { commitments, conversations, statements } from "../db/schema.js";
+import { commitments } from "../db/schema.js";
 import { COMMITMENT_WEIGHTS } from "../discovery/commitment.js";
 import type { CommitmentLevel, CommitmentRecord } from "../discovery/types.js";
-import { assertMayParticipate } from "./conversations.js";
-import { requireActor, ServiceError, type ServiceContext } from "./context.js";
+import { assertStatementAcceptsContributions } from "./statements.js";
+import { requireActor, type ServiceContext } from "./context.js";
 
 export type CommitmentView = typeof commitments.$inferSelect;
-
-async function assertStatementTakesCommitments(ctx: ServiceContext, statementId: string): Promise<void> {
-  const [target] = await ctx.db
-    .select({ conversationId: statements.conversationId, status: conversations.status })
-    .from(statements)
-    .innerJoin(conversations, eq(conversations.id, statements.conversationId))
-    .where(eq(statements.id, statementId))
-    .limit(1);
-  if (!target) throw new ServiceError("not_found", "No such Statement.");
-
-  await assertMayParticipate(ctx, target.conversationId);
-  if (target.status !== "open") {
-    throw new ServiceError("conflict", `This Conversation is ${target.status} and takes no Commitments.`);
-  }
-}
 
 /** Registering the same level twice is a no-op rather than an error: a double tap on a
  *  button is not a thing to make someone read an error message about. */
@@ -44,7 +29,7 @@ export async function commitTo(
   input: { statementId: string; level: CommitmentLevel },
 ): Promise<CommitmentView> {
   const actor = requireActor(ctx);
-  await assertStatementTakesCommitments(ctx, input.statementId);
+  await assertStatementAcceptsContributions(ctx, input.statementId);
 
   const now = ctx.now();
   const [created] = await ctx.db
