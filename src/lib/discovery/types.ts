@@ -6,8 +6,6 @@ export type VoteValue = -1 | 0 | 1;
 
 export type CommitmentLevel = "support" | "fund" | "show_up" | "skill" | "organize";
 
-export type VerificationLevel = "anonymous" | "email" | "vouched" | "verified";
-
 export type ReadinessTier = "latent" | "emerging" | "ready";
 
 export interface VoteRecord {

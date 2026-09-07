@@ -40,6 +40,17 @@ function importedModules(source: string): string[] {
   return specifiers;
 }
 
+/**
+ * ADR-0003, as a test.
+ *
+ * Weighting Votes by how well verified someone is is the intuitive Sybil defence and it
+ * distorts the maths invisibly: weighting rows changes the principal components, which
+ * changes which Opinion Groups exist at all, which moves every readiness score. So
+ * Verification Level gates entry and nothing else — and the scoring path does not even
+ * name it, which is what makes this checkable without an exception to argue about.
+ */
+const GATE_VOCABULARY = /verification|vouch/i;
+
 describe("module boundaries", () => {
   for (const dir of PURE_MODULES) {
     it(`${dir} imports no persistence`, () => {
@@ -50,6 +61,13 @@ describe("module boundaries", () => {
           if (FORBIDDEN.some((pattern) => pattern.test(specifier))) offenders.push(`${file} -> ${specifier}`);
         }
       }
+      expect(offenders).toEqual([]);
+    });
+  }
+
+  for (const dir of PURE_MODULES) {
+    it(`${dir} never reads a Verification Level (ADR-0003)`, () => {
+      const offenders = sourceFiles(dir).filter((file) => GATE_VOCABULARY.test(readFileSync(file, "utf8")));
       expect(offenders).toEqual([]);
     });
   }

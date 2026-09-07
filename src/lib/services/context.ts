@@ -9,8 +9,7 @@
  */
 
 import type { Database } from "../db/client.js";
-import type { VerificationLevel } from "../discovery/types.js";
-import { VERIFICATION_LEVELS } from "../db/schema.js";
+import { VERIFICATION_LEVELS, type VerificationLevel } from "../db/schema.js";
 
 /** Who is calling. Never inferred inside a service — always supplied by the caller
  *  that did the authenticating. */

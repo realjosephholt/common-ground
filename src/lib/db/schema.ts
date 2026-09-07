@@ -24,7 +24,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-import type { CommitmentLevel, VerificationLevel } from "../discovery/types.js";
+import type { CommitmentLevel } from "../discovery/types.js";
 
 export type ConversationStatus = "open" | "closed" | "archived";
 export type ModerationStatus = "approved" | "pending" | "removed";
@@ -33,6 +33,12 @@ export type ReportStatus = "open" | "resolved" | "dismissed";
 /** Weakest to strongest. Used as a gate at the Conversation boundary and nowhere
  *  else — nothing in `src/lib/discovery/` may read a Verification Level (ADR-0003). */
 export const VERIFICATION_LEVELS = ["anonymous", "email", "vouched", "verified"] as const;
+
+/** Declared here rather than alongside the scoring types, so that nothing in
+ *  `src/lib/discovery/` so much as names it. ADR-0003 says the scoring path may not
+ *  read a Verification Level; keeping the vocabulary out of that module is what lets
+ *  `tests/unit/architecture.test.ts` check the claim with no exceptions to argue about. */
+export type VerificationLevel = (typeof VERIFICATION_LEVELS)[number];
 export const COMMITMENT_LEVELS = ["support", "fund", "show_up", "skill", "organize"] as const;
 export const CONVERSATION_STATUSES = ["open", "closed", "archived"] as const;
 export const MODERATION_STATUSES = ["approved", "pending", "removed"] as const;

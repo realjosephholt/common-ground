@@ -10,10 +10,10 @@
 import { and, eq, sql } from "drizzle-orm";
 
 import { uuidv7 } from "../db/ids.js";
-import { participants } from "../db/schema.js";
+import { participants, type VerificationLevel } from "../db/schema.js";
 import { encodeGeohash } from "../discovery/geohash.js";
-import type { VerificationLevel } from "../discovery/types.js";
 import { requireActor, ServiceError, type ServiceContext } from "./context.js";
+import { demoteSubjectsOf } from "./vouches.js";
 
 /** The precision a home location is stored at, and the only precision there is. */
 export const LOCATION_GEOHASH_PRECISION = 5;
@@ -249,11 +249,13 @@ async function onParticipantErased(ctx: ServiceContext, participantId: string): 
   await ctx.db.execute(sql`update reports set reporter_id = null where reporter_id = ${participantId}`);
   await ctx.db.execute(sql`update reports set resolved_by = null where resolved_by = ${participantId}`);
 
-  // A departed Participant's attestations stop counting. This demotes the direct
-  // subjects and nobody further, exactly as a manual revocation would (ADR-0008).
+  // A departed Participant's attestations stop counting. The edges are stamped rather
+  // than removed, so who attested to whom survives; then the direct subjects are
+  // reconsidered and nobody further, exactly as a manual revocation would (ADR-0008).
   await ctx.db.execute(
     sql`update vouches set revoked_at = ${ctx.now()} where revoked_at is null and (voucher_id = ${participantId} or subject_id = ${participantId})`,
   );
+  await demoteSubjectsOf(ctx, participantId);
 
   // Votes, Commitments, Conversations and the Moderation Log deliberately keep pointing
   // at the tombstone. That is the whole design (ADR-0004).
