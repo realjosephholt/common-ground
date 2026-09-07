@@ -165,6 +165,48 @@ export async function removeStatement(
 }
 
 /**
+ * Put back a Statement a Moderator removed.
+ *
+ * The removal is not unwritten. It stays in the Moderation Log and the restoration is
+ * appended beside it, so the record reads as a mistake that was corrected rather than as
+ * though nothing happened — a log in which an error can be made to disappear is worth
+ * less than one that shows the correction.
+ *
+ * This says nothing about Redaction. A redacted Statement stays redacted through a
+ * restoration: Redaction is an author withdrawing their own words (ADR-0006), and
+ * restoring is only ever a decision about whether voters see the Statement.
+ */
+export async function restoreStatement(
+  ctx: ServiceContext,
+  input: { statementId: string; reason: string },
+): Promise<void> {
+  const actor = requireModerator(ctx);
+
+  const [statement] = await ctx.db
+    .select({ moderationStatus: statements.moderationStatus })
+    .from(statements)
+    .where(eq(statements.id, input.statementId))
+    .limit(1);
+  if (!statement) throw new ServiceError("not_found", "No such Statement.");
+  if (statement.moderationStatus !== "removed") {
+    throw new ServiceError("conflict", "This Statement has not been removed, so there is nothing to restore.");
+  }
+
+  await ctx.db
+    .update(statements)
+    .set({ moderationStatus: "approved" })
+    .where(and(eq(statements.id, input.statementId), eq(statements.moderationStatus, "removed")));
+
+  await appendToLog(ctx, {
+    actorId: actor.id,
+    action: "statement_restored",
+    subjectType: "statement",
+    subjectId: input.statementId,
+    reason: input.reason,
+  });
+}
+
+/**
  * Remove a Statement's text, leaving the Statement and its Votes intact.
  *
  * This is deliberately not the same answer as ADR-0004 gives for Votes, because it is

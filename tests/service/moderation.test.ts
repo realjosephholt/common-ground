@@ -10,6 +10,7 @@ import {
   removeStatement,
   reportStatement,
   resolveReport,
+  restoreStatement,
 } from "@/lib/services/moderation.js";
 import { nextStatementsToVote } from "@/lib/services/routing.js";
 import { castVote, tallyVotes } from "@/lib/services/votes.js";
@@ -182,5 +183,68 @@ describe("routing after moderation", () => {
 
     await castVote(voter.ctx, { statementId, value: -1 });
     expect(await nextStatementsToVote(voter.ctx, { conversationId, limit: 5 })).toEqual([]);
+  });
+});
+
+describe("restoring a removed Statement (#15)", () => {
+  it("puts it back in front of voters", async () => {
+    const { conversationId, statementId } = await aDeliberation(ctx.db);
+    const voter = await organiser(ctx.db, "Voter");
+    const mod = await moderator();
+
+    await removeStatement(mod.ctx, { statementId, reason: "Reported as harassment." });
+    expect(await nextStatementsToVote(voter.ctx, { conversationId, limit: 5 })).not.toContain(statementId);
+
+    await restoreStatement(mod.ctx, { statementId, reason: "Report was mistaken." });
+    expect(await nextStatementsToVote(voter.ctx, { conversationId, limit: 5 })).toContain(statementId);
+  });
+
+  /** The removal is not unwritten. A log where a mistake can be made to look like it
+   *  never happened is worth less than one that shows the correction. */
+  it("leaves the removal in the log and records the restoration beside it", async () => {
+    const { statementId } = await aDeliberation(ctx.db);
+    const mod = await moderator();
+
+    await removeStatement(mod.ctx, { statementId, reason: "Reported as harassment." });
+    await restoreStatement(mod.ctx, { statementId, reason: "Report was mistaken." });
+
+    const log = await readModerationLog(createContext(ctx.db), {});
+    expect(log.map((entry) => entry.action)).toEqual(["statement_restored", "statement_removed"]);
+    expect(log.map((entry) => entry.reason)).toContain("Report was mistaken.");
+  });
+
+  it("refuses a Statement that was never removed", async () => {
+    const { statementId } = await aDeliberation(ctx.db);
+    await expect(
+      restoreStatement((await moderator()).ctx, { statementId, reason: "Nothing to undo." }),
+    ).rejects.toMatchObject({ code: "conflict" });
+  });
+
+  it("is available to nobody below a Moderator", async () => {
+    const { opener, statementId } = await aDeliberation(ctx.db);
+    await removeStatement((await moderator()).ctx, { statementId, reason: "Policy." });
+
+    await expect(restoreStatement(opener.ctx, { statementId, reason: "I disagree." })).rejects.toMatchObject({
+      code: "forbidden",
+    });
+  });
+
+  /** Redaction is the author withdrawing their own words (ADR-0006). Restoring a
+   *  Statement is about whether voters see it, not about republishing something a
+   *  person took back. */
+  it("does not un-redact a redacted Statement", async () => {
+    const { opener, statementId } = await aDeliberation(ctx.db);
+    const mod = await moderator();
+
+    await redactStatement(opener.ctx, { statementId, reason: "Second thoughts." });
+    await removeStatement(mod.ctx, { statementId, reason: "Policy." });
+    await restoreStatement(mod.ctx, { statementId, reason: "Policy call reversed." });
+
+    const [row] = await queryRows<{ text: string | null; redacted_at: string | null }>(
+      ctx.db,
+      sql`select text, redacted_at from statements where id = ${statementId}`,
+    );
+    expect(row?.text).toBeNull();
+    expect(row?.redacted_at).not.toBeNull();
   });
 });
