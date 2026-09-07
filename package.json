@@ -5,16 +5,32 @@
   "license": "AGPL-3.0-or-later",
   "description": "Find causes with enough shared support to act on — then actually organize the action.",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
     "test:sim": "vitest run tests/simulation",
-    "typecheck": "tsc --noEmit"
+    "test:postgres": "vitest run --no-file-parallelism",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "regions:build": "node scripts/build-region-extract.ts",
+    "regions:seed": "vite-node scripts/seed-regions.ts",
+    "regions:reconcile": "vite-node scripts/reconcile-regions.ts",
+    "instance:start": "vite-node scripts/instance.ts",
+    "instance:verify": "vite-node scripts/designate-verified.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
+    "drizzle-kit": "^0.31.10",
     "typescript": "^5.7.2",
+    "vite-node": "^6.0.0",
     "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.9"
   }
 }
