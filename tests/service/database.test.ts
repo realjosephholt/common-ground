@@ -3,9 +3,9 @@ import { getTableColumns, getTableName } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 import { describe, expect, it } from "vitest";
 
-import { queryRows, resolveBackend } from "@/lib/db/client.js";
-import { schema } from "@/lib/db/schema.js";
-import { setupTestDatabase } from "../helpers/db.js";
+import { queryRows, resolveBackend } from "@/lib/db/client";
+import { schema } from "@/lib/db/schema";
+import { setupTestDatabase } from "../helpers/db";
 
 const ctx = setupTestDatabase();
 

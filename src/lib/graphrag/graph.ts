@@ -1,4 +1,4 @@
-import type { Entity, KnowledgeGraph, Relationship, TextUnit } from "./types.js";
+import type { Entity, KnowledgeGraph, Relationship, TextUnit } from "./types";
 
 export function normaliseName(name: string): string {
   return name

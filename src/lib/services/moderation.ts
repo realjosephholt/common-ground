@@ -12,7 +12,7 @@
 
 import { and, desc, eq, lt } from "drizzle-orm";
 
-import { uuidv7 } from "../db/ids.js";
+import { uuidv7 } from "../db/ids";
 import {
   moderationLog,
   reports,
@@ -20,8 +20,8 @@ import {
   type ModerationAction,
   type ModerationSubjectType,
   type ReportStatus,
-} from "../db/schema.js";
-import { meetsVerificationLevel, requireActor, ServiceError, type ServiceContext } from "./context.js";
+} from "../db/schema";
+import { meetsVerificationLevel, requireActor, ServiceError, type ServiceContext } from "./context";
 
 export type ReportView = typeof reports.$inferSelect;
 export type ModerationLogEntry = typeof moderationLog.$inferSelect;

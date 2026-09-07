@@ -1,4 +1,4 @@
-import type { CommitmentLevel, CommitmentRecord } from "./types.js";
+import type { CommitmentLevel, CommitmentRecord } from "./types";
 
 /** What each kind of pledge is worth. Ordered by scarcity, not by enthusiasm:
  *  people who will *organise* are the binding constraint on almost every action,

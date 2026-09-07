@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { queryRows } from "@/lib/db/client.js";
+import { queryRows } from "@/lib/db/client";
 import {
   archiveConversation,
   closeConversation,
@@ -9,10 +9,10 @@ import {
   listConversations,
   openConversation,
   setMinVerificationLevel,
-} from "@/lib/services/conversations.js";
-import { configureInstance } from "@/lib/services/instance.js";
-import { deleteParticipant } from "@/lib/services/participants.js";
-import { setupTestDatabase } from "../helpers/db.js";
+} from "@/lib/services/conversations";
+import { configureInstance } from "@/lib/services/instance";
+import { deleteParticipant } from "@/lib/services/participants";
+import { setupTestDatabase } from "../helpers/db";
 import {
   FIXTURE_REGIONS,
   seedRegionFixture,
@@ -20,7 +20,7 @@ import {
   signUpVerified,
   signUpVouched,
   type SignedInParticipant,
-} from "../helpers/fixtures.js";
+} from "../helpers/fixtures";
 
 const ctx = setupTestDatabase();
 

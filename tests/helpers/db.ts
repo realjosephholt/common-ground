@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach } from "vitest";
 
-import { createDatabase, type Database, type DatabaseBackend } from "@/lib/db/client.js";
-import { schema } from "@/lib/db/schema.js";
+import { createDatabase, type Database, type DatabaseBackend } from "@/lib/db/client";
+import { schema } from "@/lib/db/schema";
 
 /**
  * A migrated database per test file, emptied between tests.

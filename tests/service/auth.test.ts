@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { createContext, ServiceError, type LinkDelivery, type SignInLink } from "@/lib/services/context.js";
-import { consumeSignInToken, endSession, resolveActor, requestSignIn } from "@/lib/services/auth.js";
-import { setupTestDatabase } from "../helpers/db.js";
+import { createContext, ServiceError, type LinkDelivery, type SignInLink } from "@/lib/services/context";
+import { consumeSignInToken, endSession, resolveActor, requestSignIn } from "@/lib/services/auth";
+import { setupTestDatabase } from "../helpers/db";
 
 const ctx = setupTestDatabase();
 

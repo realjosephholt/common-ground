@@ -1,4 +1,4 @@
-import type { Community, CommunityReport, KnowledgeGraph } from "./types.js";
+import type { Community, CommunityReport, KnowledgeGraph } from "./types";
 
 /**
  * The learned taxonomy: emergent issue clusters, derived from graph communities

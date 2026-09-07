@@ -1,6 +1,6 @@
-import { mulberry32, shuffled } from "../discovery/rng.js";
-import { adjacency } from "./graph.js";
-import type { Community, KnowledgeGraph } from "./types.js";
+import { mulberry32, shuffled } from "../discovery/rng";
+import { adjacency } from "./graph";
+import type { Community, KnowledgeGraph } from "./types";
 
 interface CompactGraph {
   n: number;

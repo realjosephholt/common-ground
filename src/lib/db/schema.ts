@@ -24,7 +24,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-import type { CommitmentLevel } from "../discovery/types.js";
+import type { CommitmentLevel } from "../discovery/types";
 
 export type ConversationStatus = "open" | "closed" | "archived";
 export type ModerationStatus = "approved" | "pending" | "removed";

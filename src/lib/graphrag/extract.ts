@@ -1,5 +1,5 @@
-import { buildGraph, entityKey, resolveAliases } from "./graph.js";
-import type { Entity, EntityType, ExtractionResult, Extractor, KnowledgeGraph, Relationship, SyncExtractor, TextUnit } from "./types.js";
+import { buildGraph, entityKey, resolveAliases } from "./graph";
+import type { Entity, EntityType, ExtractionResult, Extractor, KnowledgeGraph, Relationship, SyncExtractor, TextUnit } from "./types";
 
 /** Domain lexicons. Generic NER would find "June" and "Tuesday"; what an organiser
  *  needs found is the set of things that can be pressured, done, won, or spent. */

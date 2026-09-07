@@ -9,11 +9,11 @@
 
 import { and, asc, eq, inArray } from "drizzle-orm";
 
-import { uuidv7 } from "../db/ids.js";
-import { conversations, statements, STATEMENT_MAX_LENGTH, type ModerationStatus } from "../db/schema.js";
-import { composerGuidance, type Guidance } from "../statements/composer.js";
-import { assertMayParticipate } from "./conversations.js";
-import { requireActor, ServiceError, type ServiceContext } from "./context.js";
+import { uuidv7 } from "../db/ids";
+import { conversations, statements, STATEMENT_MAX_LENGTH, type ModerationStatus } from "../db/schema";
+import { composerGuidance, type Guidance } from "../statements/composer";
+import { assertMayParticipate } from "./conversations";
+import { requireActor, ServiceError, type ServiceContext } from "./context";
 
 export type StatementView = typeof statements.$inferSelect;
 

@@ -9,13 +9,13 @@
 
 import { and, eq, lt, sql } from "drizzle-orm";
 
-import { queryRows } from "../db/client.js";
-import { conversations, votes } from "../db/schema.js";
-import type { VoteValue } from "../discovery/types.js";
-import { LEGAL_TRANSITIONS } from "./conversations.js";
-import { assertStatementAcceptsContributions } from "./statements.js";
-import { requireActor, type ServiceContext } from "./context.js";
-import { getInstanceSettings } from "./instance.js";
+import { queryRows } from "../db/client";
+import { conversations, votes } from "../db/schema";
+import type { VoteValue } from "../discovery/types";
+import { LEGAL_TRANSITIONS } from "./conversations";
+import { assertStatementAcceptsContributions } from "./statements";
+import { requireActor, type ServiceContext } from "./context";
+import { getInstanceSettings } from "./instance";
 
 export type VoteView = typeof votes.$inferSelect;
 

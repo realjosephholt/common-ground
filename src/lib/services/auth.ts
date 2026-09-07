@@ -10,17 +10,17 @@
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { createHash, randomBytes } from "node:crypto";
 
-import { uuidv7 } from "../db/ids.js";
-import { magicLinkTokens, participants, sessions } from "../db/schema.js";
-import type { Actor, ServiceContext } from "./context.js";
-import { ServiceError } from "./context.js";
+import { uuidv7 } from "../db/ids";
+import { magicLinkTokens, participants, sessions } from "../db/schema";
+import type { Actor, ServiceContext } from "./context";
+import { ServiceError } from "./context";
 import {
   createParticipant,
   findLiveParticipantByEmail,
   normaliseEmail,
   toParticipantView,
   type ParticipantView,
-} from "./participants.js";
+} from "./participants";
 
 /** Short enough that an intercepted email is usually already useless. */
 export const SIGN_IN_LINK_TTL_MINUTES = 15;

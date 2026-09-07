@@ -8,8 +8,8 @@
  * queries would verify SQL rather than rules.
  */
 
-import type { Database } from "../db/client.js";
-import { VERIFICATION_LEVELS, type VerificationLevel } from "../db/schema.js";
+import type { Database } from "../db/client";
+import { VERIFICATION_LEVELS, type VerificationLevel } from "../db/schema";
 
 /** Who is calling. Never inferred inside a service — always supplied by the caller
  *  that did the authenticating. */

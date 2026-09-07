@@ -7,9 +7,9 @@
  * repository (ADR-0012). Safe to run again after a version bump.
  */
 
-import { createDatabase } from "../src/lib/db/client.js";
-import { createContext } from "../src/lib/services/context.js";
-import { seedRegions } from "../src/lib/services/regions.js";
+import { createDatabase } from "../src/lib/db/client";
+import { createContext } from "../src/lib/services/context";
+import { seedRegions } from "../src/lib/services/regions";
 
 const handle = await createDatabase();
 try {

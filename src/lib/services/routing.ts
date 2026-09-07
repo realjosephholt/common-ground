@@ -9,10 +9,10 @@
 
 import { sql } from "drizzle-orm";
 
-import { queryRows } from "../db/client.js";
-import { selectNextStatements, type RoutingCandidate, type RoutingOptions } from "../discovery/routing.js";
-import { assertMayParticipate } from "./conversations.js";
-import { requireActor, type ServiceContext } from "./context.js";
+import { queryRows } from "../db/client";
+import { selectNextStatements, type RoutingCandidate, type RoutingOptions } from "../discovery/routing";
+import { assertMayParticipate } from "./conversations";
+import { requireActor, type ServiceContext } from "./context";
 
 interface CandidateRow {
   statement_id: string;

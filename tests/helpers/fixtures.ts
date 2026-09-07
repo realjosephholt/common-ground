@@ -1,17 +1,17 @@
-import type { Database } from "@/lib/db/client.js";
-import { consumeSignInToken, requestSignIn } from "@/lib/services/auth.js";
+import type { Database } from "@/lib/db/client";
+import { consumeSignInToken, requestSignIn } from "@/lib/services/auth";
 import {
   createContext,
   type Actor,
   type LinkDelivery,
   type ServiceContext,
   type SignInLink,
-} from "@/lib/services/context.js";
-import { designateVerified } from "@/lib/services/instance.js";
-import type { ParticipantView } from "@/lib/services/participants.js";
-import { parseRegionExtract } from "@/lib/regions/extract.js";
-import { seedRegions } from "@/lib/services/regions.js";
-import { vouchFor } from "@/lib/services/vouches.js";
+} from "@/lib/services/context";
+import { designateVerified } from "@/lib/services/instance";
+import type { ParticipantView } from "@/lib/services/participants";
+import { parseRegionExtract } from "@/lib/regions/extract";
+import { seedRegions } from "@/lib/services/regions";
+import { vouchFor } from "@/lib/services/vouches";
 
 export function capturingDelivery(): { delivery: LinkDelivery; links: SignInLink[] } {
   const links: SignInLink[] = [];

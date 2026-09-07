@@ -1,4 +1,4 @@
-import { decodeGeohash, haversineKm, type LatLng } from "./geohash.js";
+import { decodeGeohash, haversineKm, type LatLng } from "./geohash";
 
 export interface DensityResult {
   /** share of committed weight inside the densest cluster, in [0,1] */

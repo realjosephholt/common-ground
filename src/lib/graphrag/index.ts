@@ -1,17 +1,17 @@
-export * from "./types.js";
-export { buildGraph, degreeMap, adjacency, normaliseName, entityKey, resolveAliases } from "./graph.js";
-export { ruleBasedExtractor, indexCorpus } from "./extract.js";
-export { detectCommunities, modularity } from "./communities.js";
-export { structuralSummarizer, summarizeAll } from "./summarize.js";
-export { localSearch, globalSearch } from "./search.js";
-export { buildTaxonomy, tacticEvidence } from "./taxonomy.js";
-export * from "./domain.js";
+export * from "./types";
+export { buildGraph, degreeMap, adjacency, normaliseName, entityKey, resolveAliases } from "./graph";
+export { ruleBasedExtractor, indexCorpus } from "./extract";
+export { detectCommunities, modularity } from "./communities";
+export { structuralSummarizer, summarizeAll } from "./summarize";
+export { localSearch, globalSearch } from "./search";
+export { buildTaxonomy, tacticEvidence } from "./taxonomy";
+export * from "./domain";
 
-import { indexCorpus, ruleBasedExtractor } from "./extract.js";
-import { detectCommunities } from "./communities.js";
-import { structuralSummarizer, summarizeAll } from "./summarize.js";
-import { buildTaxonomy, type IssueCluster } from "./taxonomy.js";
-import type { Community, CommunityReport, Extractor, KnowledgeGraph, Summarizer, TextUnit } from "./types.js";
+import { indexCorpus, ruleBasedExtractor } from "./extract";
+import { detectCommunities } from "./communities";
+import { structuralSummarizer, summarizeAll } from "./summarize";
+import { buildTaxonomy, type IssueCluster } from "./taxonomy";
+import type { Community, CommunityReport, Extractor, KnowledgeGraph, Summarizer, TextUnit } from "./types";
 
 export interface IndexResult {
   graph: KnowledgeGraph;

@@ -9,11 +9,11 @@
 
 import { and, eq, sql } from "drizzle-orm";
 
-import { uuidv4, uuidv7 } from "../db/ids.js";
-import { participants, type VerificationLevel } from "../db/schema.js";
-import { encodeGeohash } from "../discovery/geohash.js";
-import { requireActor, ServiceError, type ServiceContext } from "./context.js";
-import { demoteSubjectsOf } from "./vouches.js";
+import { uuidv4, uuidv7 } from "../db/ids";
+import { participants, type VerificationLevel } from "../db/schema";
+import { encodeGeohash } from "../discovery/geohash";
+import { requireActor, ServiceError, type ServiceContext } from "./context";
+import { demoteSubjectsOf } from "./vouches";
 
 /** The precision a home location is stored at, and the only precision there is. */
 export const LOCATION_GEOHASH_PRECISION = 5;

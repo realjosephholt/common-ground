@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { detectCommunities, modularity } from "../../src/lib/graphrag/communities.js";
-import { buildCorpus } from "../../src/lib/graphrag/domain.js";
-import { indexCorpus, ruleBasedExtractor } from "../../src/lib/graphrag/extract.js";
-import { adjacency, buildGraph, normaliseName, resolveAliases } from "../../src/lib/graphrag/graph.js";
-import { buildIndex } from "../../src/lib/graphrag/index.js";
-import { globalSearch, localSearch } from "../../src/lib/graphrag/search.js";
-import { tacticEvidence } from "../../src/lib/graphrag/taxonomy.js";
-import type { TextUnit } from "../../src/lib/graphrag/types.js";
+import { detectCommunities, modularity } from "../../src/lib/graphrag/communities";
+import { buildCorpus } from "../../src/lib/graphrag/domain";
+import { indexCorpus, ruleBasedExtractor } from "../../src/lib/graphrag/extract";
+import { adjacency, buildGraph, normaliseName, resolveAliases } from "../../src/lib/graphrag/graph";
+import { buildIndex } from "../../src/lib/graphrag/index";
+import { globalSearch, localSearch } from "../../src/lib/graphrag/search";
+import { tacticEvidence } from "../../src/lib/graphrag/taxonomy";
+import type { TextUnit } from "../../src/lib/graphrag/types";
 
 const unit = (id: string, text: string, kind: TextUnit["source"]["kind"] = "statement"): TextUnit => ({
   id,

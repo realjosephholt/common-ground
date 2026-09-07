@@ -1,12 +1,12 @@
 import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { queryRows } from "@/lib/db/client.js";
-import { designateVerified } from "@/lib/services/instance.js";
-import { deleteParticipant } from "@/lib/services/participants.js";
-import { MAX_OUTSTANDING_VOUCHES, revokeVouch, vouchFor } from "@/lib/services/vouches.js";
-import { setupTestDatabase } from "../helpers/db.js";
-import { signUp, type SignedInParticipant } from "../helpers/fixtures.js";
+import { queryRows } from "@/lib/db/client";
+import { designateVerified } from "@/lib/services/instance";
+import { deleteParticipant } from "@/lib/services/participants";
+import { MAX_OUTSTANDING_VOUCHES, revokeVouch, vouchFor } from "@/lib/services/vouches";
+import { setupTestDatabase } from "../helpers/db";
+import { signUp, type SignedInParticipant } from "../helpers/fixtures";
 
 const ctx = setupTestDatabase();
 

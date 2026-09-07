@@ -10,10 +10,10 @@
  * that an operator can start, migrate and seed with one command, and hand accounts to.
  */
 
-import { createDatabase } from "../src/lib/db/client.js";
-import { createContext } from "../src/lib/services/context.js";
-import { seedRegions } from "../src/lib/services/regions.js";
-import { archiveSilentConversations } from "../src/lib/services/votes.js";
+import { createDatabase } from "../src/lib/db/client";
+import { createContext } from "../src/lib/services/context";
+import { seedRegions } from "../src/lib/services/regions";
+import { archiveSilentConversations } from "../src/lib/services/votes";
 
 const SWEEP_INTERVAL_MS = Number(process.env["SWEEP_INTERVAL_MS"] ?? 3_600_000);
 

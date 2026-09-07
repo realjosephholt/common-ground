@@ -1,12 +1,12 @@
-import { bridgeScore, perGroupAgreement, tallyByGroup } from "./bridging.js";
-import { COMMITMENT_WEIGHTS, commitmentScore } from "./commitment.js";
-import { heuristicConcreteness, type ConcretenessResult } from "./concreteness.js";
-import { densityScore, type CommittedPerson } from "./density.js";
-import { chooseK } from "./kmeans.js";
-import { buildVoteMatrix, exposureCounts, toCenteredMatrix } from "./matrix.js";
-import { pca } from "./pca.js";
-import { DEFAULT_THRESHOLDS, readiness, tierFor, type ReadinessThresholds } from "./readiness.js";
-import type { CommitmentRecord, StatementScore, VoteRecord } from "./types.js";
+import { bridgeScore, perGroupAgreement, tallyByGroup } from "./bridging";
+import { COMMITMENT_WEIGHTS, commitmentScore } from "./commitment";
+import { heuristicConcreteness, type ConcretenessResult } from "./concreteness";
+import { densityScore, type CommittedPerson } from "./density";
+import { chooseK } from "./kmeans";
+import { buildVoteMatrix, exposureCounts, toCenteredMatrix } from "./matrix";
+import { pca } from "./pca";
+import { DEFAULT_THRESHOLDS, readiness, tierFor, type ReadinessThresholds } from "./readiness";
+import type { CommitmentRecord, StatementScore, VoteRecord } from "./types";
 
 export interface StatementInput {
   id: string;
