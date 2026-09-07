@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { agreementRate, bridgeScore, tallyByGroup } from "../../src/lib/discovery/bridging.js";
-import { commitmentScore } from "../../src/lib/discovery/commitment.js";
-import { heuristicConcreteness, humanOverride } from "../../src/lib/discovery/concreteness.js";
-import { densityScore } from "../../src/lib/discovery/density.js";
-import { decodeGeohash, encodeGeohash, haversineKm } from "../../src/lib/discovery/geohash.js";
-import { limitingFactor, readiness, tierFor } from "../../src/lib/discovery/readiness.js";
+import { agreementRate, bridgeScore, tallyByGroup } from "../../src/lib/discovery/bridging";
+import { commitmentScore } from "../../src/lib/discovery/commitment";
+import { heuristicConcreteness, humanOverride } from "../../src/lib/discovery/concreteness";
+import { densityScore } from "../../src/lib/discovery/density";
+import { decodeGeohash, encodeGeohash, haversineKm } from "../../src/lib/discovery/geohash";
+import { limitingFactor, readiness, tierFor } from "../../src/lib/discovery/readiness";
 
 describe("agreementRate (Beta(1,1) smoothing)", () => {
   it("returns the neutral prior when a group has not seen the statement", () => {

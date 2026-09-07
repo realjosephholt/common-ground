@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { queryRows } from "@/lib/db/client.js";
-import { createContext } from "@/lib/services/context.js";
+import { queryRows } from "@/lib/db/client";
+import { createContext } from "@/lib/services/context";
 import {
   listOpenReports,
   readModerationLog,
@@ -11,12 +11,12 @@ import {
   reportStatement,
   resolveReport,
   restoreStatement,
-} from "@/lib/services/moderation.js";
-import { nextStatementsToVote } from "@/lib/services/routing.js";
-import { castVote, tallyVotes } from "@/lib/services/votes.js";
-import { setupTestDatabase } from "../helpers/db.js";
-import { aDeliberation, organiser } from "../helpers/deliberation.js";
-import { signUpVerified } from "../helpers/fixtures.js";
+} from "@/lib/services/moderation";
+import { nextStatementsToVote } from "@/lib/services/routing";
+import { castVote, tallyVotes } from "@/lib/services/votes";
+import { setupTestDatabase } from "../helpers/db";
+import { aDeliberation, organiser } from "../helpers/deliberation";
+import { signUpVerified } from "../helpers/fixtures";
 
 const ctx = setupTestDatabase();
 
@@ -102,7 +102,7 @@ describe("the Moderation Log", () => {
   });
 
   it("exposes no update or delete path", async () => {
-    const exports = await import("@/lib/services/moderation.js");
+    const exports = await import("@/lib/services/moderation");
     const mutators = Object.keys(exports).filter((name) => /(update|edit|delete|amend|purge).*log/i.test(name));
     expect(mutators).toEqual([]);
   });

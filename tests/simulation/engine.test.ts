@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { scoreConversation } from "../../src/lib/discovery/pipeline.js";
-import { readiness } from "../../src/lib/discovery/readiness.js";
-import { adjustedRandIndex } from "./metrics.js";
-import { addCommitments, generatePopulation } from "./populations.js";
+import { scoreConversation } from "../../src/lib/discovery/pipeline";
+import { readiness } from "../../src/lib/discovery/readiness";
+import { adjustedRandIndex } from "./metrics";
+import { addCommitments, generatePopulation } from "./populations";
 
 function toStatements(pop: ReturnType<typeof generatePopulation>) {
   return pop.statements.map((s) => ({ id: s.id, text: s.text, approved: true }));

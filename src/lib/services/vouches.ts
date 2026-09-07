@@ -12,10 +12,10 @@
 
 import { and, eq, isNull, sql } from "drizzle-orm";
 
-import { queryRows } from "../db/client.js";
-import { uuidv7 } from "../db/ids.js";
-import { participants, vouches, type VerificationLevel } from "../db/schema.js";
-import { requireActor, ServiceError, type ServiceContext } from "./context.js";
+import { queryRows } from "../db/client";
+import { uuidv7 } from "../db/ids";
+import { participants, vouches, type VerificationLevel } from "../db/schema";
+import { requireActor, ServiceError, type ServiceContext } from "./context";
 
 /** Bounds how much a single compromised account can manufacture. Five is what makes
  *  the non-cascading revocation in ADR-0008 affordable: the blast radius is capped

@@ -14,11 +14,11 @@
 
 import { and, eq } from "drizzle-orm";
 
-import { commitments } from "../db/schema.js";
-import { COMMITMENT_WEIGHTS } from "../discovery/commitment.js";
-import type { CommitmentLevel, CommitmentRecord } from "../discovery/types.js";
-import { assertStatementAcceptsContributions } from "./statements.js";
-import { requireActor, type ServiceContext } from "./context.js";
+import { commitments } from "../db/schema";
+import { COMMITMENT_WEIGHTS } from "../discovery/commitment";
+import type { CommitmentLevel, CommitmentRecord } from "../discovery/types";
+import { assertStatementAcceptsContributions } from "./statements";
+import { requireActor, type ServiceContext } from "./context";
 
 export type CommitmentView = typeof commitments.$inferSelect;
 

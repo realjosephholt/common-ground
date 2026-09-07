@@ -12,9 +12,9 @@
  * is the only path to the level that moderates.
  */
 
-import { createDatabase } from "../src/lib/db/client.js";
-import { createContext } from "../src/lib/services/context.js";
-import { designateVerified, listVerifiedParticipants } from "../src/lib/services/instance.js";
+import { createDatabase } from "../src/lib/db/client";
+import { createContext } from "../src/lib/services/context";
+import { designateVerified, listVerifiedParticipants } from "../src/lib/services/instance";
 
 const emails = process.argv.slice(2).filter((argument) => argument.includes("@"));
 

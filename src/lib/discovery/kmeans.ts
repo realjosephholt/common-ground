@@ -1,4 +1,4 @@
-import { mulberry32, type Rng } from "./rng.js";
+import { mulberry32, type Rng } from "./rng";
 
 export interface ClusterResult {
   k: number;

@@ -1,5 +1,5 @@
-import { degreeMap } from "./graph.js";
-import type { Community, CommunityReport, KnowledgeGraph, Summarizer } from "./types.js";
+import { degreeMap } from "./graph";
+import type { Community, CommunityReport, KnowledgeGraph, Summarizer } from "./types";
 
 /**
  * Deterministic community summariser.

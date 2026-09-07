@@ -1,4 +1,4 @@
-import type { ReadinessFactors, ReadinessTier } from "./types.js";
+import type { ReadinessFactors, ReadinessTier } from "./types";
 
 export interface ReadinessThresholds {
   emerging: number;

@@ -1,13 +1,13 @@
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { queryRows } from "@/lib/db/client.js";
-import { participants } from "@/lib/db/schema.js";
-import { consumeSignInToken, requestSignIn, resolveActor } from "@/lib/services/auth.js";
-import { createContext } from "@/lib/services/context.js";
-import { deleteParticipant, getStoredLocation, setDisplayName, setLocation } from "@/lib/services/participants.js";
-import { setupTestDatabase } from "../helpers/db.js";
-import { capturingDelivery, signUp } from "../helpers/fixtures.js";
+import { queryRows } from "@/lib/db/client";
+import { participants } from "@/lib/db/schema";
+import { consumeSignInToken, requestSignIn, resolveActor } from "@/lib/services/auth";
+import { createContext } from "@/lib/services/context";
+import { deleteParticipant, getStoredLocation, setDisplayName, setLocation } from "@/lib/services/participants";
+import { setupTestDatabase } from "../helpers/db";
+import { capturingDelivery, signUp } from "../helpers/fixtures";
 
 const ctx = setupTestDatabase();
 

@@ -1,4 +1,4 @@
-import type { TextUnit } from "./types.js";
+import type { TextUnit } from "./types";
 
 /** Turning app records into a corpus. This adapter is where GraphRAG stops being a
  *  generic library and starts being about organising: what we choose to feed it

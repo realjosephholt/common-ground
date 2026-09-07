@@ -1,13 +1,13 @@
 import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { queryRows } from "@/lib/db/client.js";
-import { STATEMENT_MAX_LENGTH } from "@/lib/db/schema.js";
-import { composerGuidance } from "@/lib/statements/composer.js";
-import { archiveConversation, closeConversation, openConversation } from "@/lib/services/conversations.js";
-import { deleteParticipant } from "@/lib/services/participants.js";
-import { listStatements, writeStatement } from "@/lib/services/statements.js";
-import { setupTestDatabase } from "../helpers/db.js";
+import { queryRows } from "@/lib/db/client";
+import { STATEMENT_MAX_LENGTH } from "@/lib/db/schema";
+import { composerGuidance } from "@/lib/statements/composer";
+import { archiveConversation, closeConversation, openConversation } from "@/lib/services/conversations";
+import { deleteParticipant } from "@/lib/services/participants";
+import { listStatements, writeStatement } from "@/lib/services/statements";
+import { setupTestDatabase } from "../helpers/db";
 import {
   FIXTURE_REGIONS,
   seedRegionFixture,
@@ -15,7 +15,7 @@ import {
   signUpVerified,
   signUpVouched,
   type SignedInParticipant,
-} from "../helpers/fixtures.js";
+} from "../helpers/fixtures";
 
 const ctx = setupTestDatabase();
 

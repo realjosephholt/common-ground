@@ -12,7 +12,7 @@
 
 import { eq, or, sql } from "drizzle-orm";
 
-import { queryRows } from "../db/client.js";
+import { queryRows } from "../db/client";
 import {
   commitments,
   conversations,
@@ -23,9 +23,9 @@ import {
   statements,
   votes,
   vouches,
-} from "../db/schema.js";
-import { requireActor, ServiceError, type ServiceContext } from "./context.js";
-import { findLiveParticipantById, toParticipantView, type ParticipantView } from "./participants.js";
+} from "../db/schema";
+import { requireActor, ServiceError, type ServiceContext } from "./context";
+import { findLiveParticipantById, toParticipantView, type ParticipantView } from "./participants";
 
 export interface SessionSummary {
   id: string;

@@ -1,4 +1,4 @@
-import { mulberry32 } from "./rng.js";
+import { mulberry32 } from "./rng";
 
 export interface RoutingCandidate {
   statementId: string;

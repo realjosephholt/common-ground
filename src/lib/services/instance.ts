@@ -9,10 +9,10 @@
 
 import { and, eq, sql } from "drizzle-orm";
 
-import { uuidv7 } from "../db/ids.js";
-import { instanceSettings, participants, type VerificationLevel } from "../db/schema.js";
-import { ServiceError, type ServiceContext } from "./context.js";
-import { normaliseEmail, toParticipantView, type ParticipantView } from "./participants.js";
+import { uuidv7 } from "../db/ids";
+import { instanceSettings, participants, type VerificationLevel } from "../db/schema";
+import { ServiceError, type ServiceContext } from "./context";
+import { normaliseEmail, toParticipantView, type ParticipantView } from "./participants";
 
 export type InstanceSettings = typeof instanceSettings.$inferSelect;
 

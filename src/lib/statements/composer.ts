@@ -14,7 +14,7 @@
  * missing, the author decides, and the score is what actually judges it.
  */
 
-import { heuristicConcreteness } from "../discovery/concreteness.js";
+import { heuristicConcreteness } from "../discovery/concreteness";
 
 export type GuidanceCode =
   | "reads_as_complaint"

@@ -19,10 +19,15 @@
     "regions:seed": "vite-node scripts/seed-regions.ts",
     "regions:reconcile": "vite-node scripts/reconcile-regions.ts",
     "instance:start": "vite-node scripts/instance.ts",
-    "instance:verify": "vite-node scripts/designate-verified.ts"
+    "instance:verify": "vite-node scripts/designate-verified.ts",
+    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev",
+    "build": "NEXT_TELEMETRY_DISABLED=1 next build",
+    "start": "NEXT_TELEMETRY_DISABLED=1 next start"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
     "drizzle-kit": "^0.31.10",
     "typescript": "^5.7.2",
     "vite-node": "^6.0.0",
@@ -31,6 +36,9 @@
   "dependencies": {
     "@electric-sql/pglite": "^0.5.8",
     "drizzle-orm": "^0.45.2",
-    "postgres": "^3.4.9"
+    "next": "^16.3.4",
+    "postgres": "^3.4.9",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   }
 }

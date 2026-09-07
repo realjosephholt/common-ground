@@ -1,14 +1,14 @@
 import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { queryRows } from "@/lib/db/client.js";
-import { archiveConversation, closeConversation, openConversation } from "@/lib/services/conversations.js";
-import { deleteParticipant } from "@/lib/services/participants.js";
-import { writeStatement } from "@/lib/services/statements.js";
-import { archiveSilentConversations, castVote, getMyVote, tallyVotes } from "@/lib/services/votes.js";
-import { setupTestDatabase } from "../helpers/db.js";
-import { aDeliberation, organiser } from "../helpers/deliberation.js";
-import { FIXTURE_REGIONS, seedRegionFixture, signUp } from "../helpers/fixtures.js";
+import { queryRows } from "@/lib/db/client";
+import { archiveConversation, closeConversation, openConversation } from "@/lib/services/conversations";
+import { deleteParticipant } from "@/lib/services/participants";
+import { writeStatement } from "@/lib/services/statements";
+import { archiveSilentConversations, castVote, getMyVote, tallyVotes } from "@/lib/services/votes";
+import { setupTestDatabase } from "../helpers/db";
+import { aDeliberation, organiser } from "../helpers/deliberation";
+import { FIXTURE_REGIONS, seedRegionFixture, signUp } from "../helpers/fixtures";
 
 const ctx = setupTestDatabase();
 

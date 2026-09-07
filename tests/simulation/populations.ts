@@ -1,5 +1,5 @@
-import { mulberry32, type Rng } from "../../src/lib/discovery/rng.js";
-import type { CommitmentLevel, CommitmentRecord, VoteRecord, VoteValue } from "../../src/lib/discovery/types.js";
+import { mulberry32, type Rng } from "../../src/lib/discovery/rng";
+import type { CommitmentLevel, CommitmentRecord, VoteRecord, VoteValue } from "../../src/lib/discovery/types";
 
 /**
  * Synthetic populations with KNOWN latent structure.

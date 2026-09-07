@@ -11,9 +11,9 @@
 
 import { readFileSync } from "node:fs";
 
-import { createDatabase } from "../src/lib/db/client.js";
-import { createContext } from "../src/lib/services/context.js";
-import { parseDeletesFeed, reconcileRegions } from "../src/lib/services/regions.js";
+import { createDatabase } from "../src/lib/db/client";
+import { createContext } from "../src/lib/services/context";
+import { parseDeletesFeed, reconcileRegions } from "../src/lib/services/regions";
 
 const deletesFile = process.argv[2];
 const deletedGeonameIds = deletesFile ? parseDeletesFeed(readFileSync(deletesFile, "utf8")) : [];

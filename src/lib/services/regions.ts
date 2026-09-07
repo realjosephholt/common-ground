@@ -9,16 +9,16 @@
 
 import { sql } from "drizzle-orm";
 
-import { queryRows } from "../db/client.js";
-import { REGION_LEVELS, regions } from "../db/schema.js";
+import { queryRows } from "../db/client";
+import { REGION_LEVELS, regions } from "../db/schema";
 import {
   keyOf,
   parentKeyOf,
   readVendoredExtract,
   type RegionExtractRow,
   type RegionLevel,
-} from "../regions/extract.js";
-import type { ServiceContext } from "./context.js";
+} from "../regions/extract";
+import type { ServiceContext } from "./context";
 
 /** Countries first, then each administrative level in turn. Seeding in this order means
  *  a row's parent is always already present, so the self-referencing foreign key never

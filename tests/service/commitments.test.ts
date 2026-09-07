@@ -1,21 +1,21 @@
 import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { queryRows } from "@/lib/db/client.js";
-import { COMMITMENT_LEVELS } from "@/lib/db/schema.js";
-import { commitmentScore } from "@/lib/discovery/commitment.js";
-import { closeConversation } from "@/lib/services/conversations.js";
+import { queryRows } from "@/lib/db/client";
+import { COMMITMENT_LEVELS } from "@/lib/db/schema";
+import { commitmentScore } from "@/lib/discovery/commitment";
+import { closeConversation } from "@/lib/services/conversations";
 import {
   commitTo,
   countedCommitments,
   listMyCommitments,
   strongestCommitmentPerParticipant,
   withdrawCommitment,
-} from "@/lib/services/commitments.js";
-import { deleteParticipant } from "@/lib/services/participants.js";
-import { castVote, getMyVote } from "@/lib/services/votes.js";
-import { setupTestDatabase } from "../helpers/db.js";
-import { aDeliberation } from "../helpers/deliberation.js";
+} from "@/lib/services/commitments";
+import { deleteParticipant } from "@/lib/services/participants";
+import { castVote, getMyVote } from "@/lib/services/votes";
+import { setupTestDatabase } from "../helpers/db";
+import { aDeliberation } from "../helpers/deliberation";
 
 const ctx = setupTestDatabase();
 
@@ -101,7 +101,7 @@ describe("Commitment and Vote are different claims", () => {
    * roster — only counts and levels.
    */
   it("exposes no roster that could be mistaken for enrolment", async () => {
-    const exports = await import("@/lib/services/commitments.js");
+    const exports = await import("@/lib/services/commitments");
     expect(Object.keys(exports).some((name) => /member|roster|enrol|enroll|signup/i.test(name))).toBe(false);
   });
 });

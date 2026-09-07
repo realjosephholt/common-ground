@@ -1,4 +1,4 @@
-import type { GroupVoteTally } from "./types.js";
+import type { GroupVoteTally } from "./types";
 
 export interface BridgeOptions {
   /** How much a "pass" counts against agreement. 1 = a pass is as good as a

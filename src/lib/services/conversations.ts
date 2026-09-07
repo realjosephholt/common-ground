@@ -14,11 +14,11 @@
 
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
-import { queryRows } from "../db/client.js";
-import { uuidv7 } from "../db/ids.js";
-import { conversations, regions, type ConversationStatus, type VerificationLevel } from "../db/schema.js";
-import { meetsVerificationLevel, requireActor, ServiceError, type ServiceContext } from "./context.js";
-import { getInstanceSettings } from "./instance.js";
+import { queryRows } from "../db/client";
+import { uuidv7 } from "../db/ids";
+import { conversations, regions, type ConversationStatus, type VerificationLevel } from "../db/schema";
+import { meetsVerificationLevel, requireActor, ServiceError, type ServiceContext } from "./context";
+import { getInstanceSettings } from "./instance";
 
 /** Below this, a Participant may take part but may not open a Conversation. */
 export const MIN_LEVEL_TO_OPEN_CONVERSATION: VerificationLevel = "vouched";

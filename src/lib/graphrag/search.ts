@@ -1,5 +1,5 @@
-import { adjacency, degreeMap, normaliseName } from "./graph.js";
-import type { CommunityReport, ContextBundle, Entity, KnowledgeGraph, Relationship, TextUnit } from "./types.js";
+import { adjacency, degreeMap, normaliseName } from "./graph";
+import type { CommunityReport, ContextBundle, Entity, KnowledgeGraph, Relationship, TextUnit } from "./types";
 
 function tokenise(s: string): string[] {
   return normaliseName(s).split(" ").filter((t) => t.length > 2);

@@ -1,7 +1,7 @@
-import type { Database } from "@/lib/db/client.js";
-import { openConversation } from "@/lib/services/conversations.js";
-import { writeStatement } from "@/lib/services/statements.js";
-import { FIXTURE_REGIONS, seedRegionFixture, signUpVerified, signUpVouched, type SignedInParticipant } from "./fixtures.js";
+import type { Database } from "@/lib/db/client";
+import { openConversation } from "@/lib/services/conversations";
+import { writeStatement } from "@/lib/services/statements";
+import { FIXTURE_REGIONS, seedRegionFixture, signUpVerified, signUpVouched, type SignedInParticipant } from "./fixtures";
 
 let counter = 0;
 

@@ -1,12 +1,12 @@
 import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { queryRows } from "@/lib/db/client.js";
-import { parseRegionExtract, readVendoredExtract } from "@/lib/regions/extract.js";
-import { createContext } from "@/lib/services/context.js";
-import { parseDeletesFeed, reconcileRegions, searchRegions, seedRegions } from "@/lib/services/regions.js";
-import { setupTestDatabase } from "../helpers/db.js";
-import { REGION_FIXTURE } from "../helpers/fixtures.js";
+import { queryRows } from "@/lib/db/client";
+import { parseRegionExtract, readVendoredExtract } from "@/lib/regions/extract";
+import { createContext } from "@/lib/services/context";
+import { parseDeletesFeed, reconcileRegions, searchRegions, seedRegions } from "@/lib/services/regions";
+import { setupTestDatabase } from "../helpers/db";
+import { REGION_FIXTURE } from "../helpers/fixtures";
 
 const ctx = setupTestDatabase();
 

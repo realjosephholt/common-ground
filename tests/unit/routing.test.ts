@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { scoreCandidates, selectNextStatements, type RoutingCandidate } from "../../src/lib/discovery/routing.js";
+import { scoreCandidates, selectNextStatements, type RoutingCandidate } from "../../src/lib/discovery/routing";
 
 const NOW = 1_700_000_000_000;
 const DAY = 86_400_000;

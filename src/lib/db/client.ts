@@ -10,11 +10,12 @@
  * Service code never learns which backend it got.
  */
 
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { SQL } from "drizzle-orm";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 
-import { schema } from "./schema.js";
+import { schema } from "./schema";
 
 /** The type every service takes. Deliberately the shared Drizzle base class rather
  *  than either driver's concrete type, so that no service can accidentally depend on
@@ -40,7 +41,10 @@ export interface DatabaseHandle {
   close(): Promise<void>;
 }
 
-const MIGRATIONS_FOLDER = fileURLToPath(new URL("./migrations", import.meta.url));
+/** Built from the directory rather than with `new URL(..., import.meta.url)`: bundlers
+ *  read that idiom as a static asset reference and try to resolve `./migrations` as a
+ *  module, which it is not — it is a directory of SQL read at runtime. */
+const MIGRATIONS_FOLDER = join(dirname(fileURLToPath(import.meta.url)), "migrations");
 
 export function resolveBackend(config: DatabaseConfig = {}): DatabaseBackend {
   if (config.backend) return config.backend;

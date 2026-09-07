@@ -7,9 +7,10 @@
 
 import { gunzipSync } from "node:zlib";
 import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { REGION_LEVELS, type RegionLevel } from "../db/schema.js";
+import { REGION_LEVELS, type RegionLevel } from "../db/schema";
 
 export type { RegionLevel };
 
@@ -26,7 +27,7 @@ export interface RegionExtractRow {
   admin2Code: string | null;
 }
 
-const DATA_DIR = new URL("../../../data/geonames/", import.meta.url);
+const DATA_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "data", "geonames");
 
 const EXPECTED_HEADER = "geoname_id\tname\tascii_name\tcountry_code\tlevel\tadmin1_code\tadmin2_code";
 
@@ -70,8 +71,8 @@ export function parseRegionExtract(tsv: string): RegionExtractRow[] {
 }
 
 export function readVendoredExtract(): { rows: RegionExtractRow[]; version: string } {
-  const gz = readFileSync(fileURLToPath(new URL("regions.tsv.gz", DATA_DIR)));
-  const version = readFileSync(fileURLToPath(new URL("VERSION", DATA_DIR)), "utf8").trim();
+  const gz = readFileSync(join(DATA_DIR, "regions.tsv.gz"));
+  const version = readFileSync(join(DATA_DIR, "VERSION"), "utf8").trim();
   return { rows: parseRegionExtract(gunzipSync(gz).toString("utf8")), version };
 }
 

@@ -1,5 +1,5 @@
-import type { VoteMatrixLike } from "./pca.js";
-import type { VoteRecord, VoteValue } from "./types.js";
+import type { VoteMatrixLike } from "./pca";
+import type { VoteRecord, VoteValue } from "./types";
 
 /** Users x statements. `null` means "this user never saw this statement", which is
  *  categorically different from "saw it and passed" (0). Keeping them distinct is

@@ -1,0 +1,54 @@
+/* Self-hosted only. No font, stylesheet, script or image on any page may come from a
+   third party: a request for a webfont on a page about a Cause tells whoever serves that
+   font who is reading it, from what address, at what time — and the reader cannot see it
+   happening. The system font stack costs nothing and discloses nothing. */
+
+:root {
+  --ink: #14171a;
+  --paper: #fbfaf8;
+  --muted: #5a6169;
+  --rule: #d9d5cf;
+  --accent: #7a1f1f;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #ecebe8;
+    --paper: #16181a;
+    --muted: #9aa1a8;
+    --rule: #333;
+    --accent: #e0928f;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.55;
+  font-size: 1.0625rem;
+}
+
+main { max-width: 44rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+a { color: var(--accent); }
+
+h1, h2, h3 { line-height: 1.2; }
+
+/* Never remove the focus ring: keyboard-only navigation is how a lot of people use
+   this, and on a device where script is blocked it may be the only way. */
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+header.site {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.85rem 1.25rem;
+}
+header.site nav { max-width: 44rem; margin: 0 auto; display: flex; gap: 1rem; align-items: baseline; }
+header.site .name { font-weight: 600; text-decoration: none; color: var(--ink); }
+header.site .spacer { flex: 1; }
+
+.muted { color: var(--muted); }
