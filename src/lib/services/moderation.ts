@@ -10,7 +10,7 @@
  * because append-only has to be structural rather than promised.
  */
 
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, lt } from "drizzle-orm";
 
 import { uuidv7 } from "../db/ids.js";
 import {
@@ -267,7 +267,7 @@ export async function readModerationLog(
   ctx: ServiceContext,
   input: ReadModerationLogInput,
 ): Promise<ModerationLogEntry[]> {
-  const filters = input.before ? [sql`${moderationLog.createdAt} < ${input.before}`] : [];
+  const filters = input.before ? [lt(moderationLog.createdAt, input.before)] : [];
   return ctx.db
     .select()
     .from(moderationLog)

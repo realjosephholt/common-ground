@@ -7,7 +7,7 @@
  * facts that the scoring treats differently.
  */
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, lt, sql } from "drizzle-orm";
 
 import { queryRows } from "../db/client.js";
 import { conversations, votes } from "../db/schema.js";
@@ -110,7 +110,7 @@ export async function archiveSilentConversations(ctx: ServiceContext): Promise<A
     .where(
       and(
         eq(conversations.status, "open"),
-        sql`${conversations.createdAt} < ${cutoff}`,
+        lt(conversations.createdAt, cutoff),
         sql`not exists (
           select 1 from votes v
           join statements s on s.id = v.statement_id
