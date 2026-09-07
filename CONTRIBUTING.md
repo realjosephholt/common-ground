@@ -23,6 +23,15 @@ a server yourself:
 DATABASE_URL=postgres://... npm run test:postgres
 ```
 
+### A note on the lockfile
+
+If `npm install` rewrites `package-lock.json` when you did not expect it to, check your
+npm version. npm 11 omits `"optional": true` on *nested* platform-specific packages —
+the `@esbuild/*` builds pulled in under `tsx` — which makes `npm ci` on any other
+platform try to install an AIX binary on Linux and fail. npm 10 records them correctly,
+and the lockfile here is generated with it. CI runs `npm ci` on Linux, so this surfaces
+on your pull request rather than in somebody else's checkout.
+
 Regions come from a vendored GeoNames extract in `data/geonames/`, so seeding needs no
 network:
 
