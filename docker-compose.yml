@@ -1,0 +1,37 @@
+# Run an Instance:
+#
+#   docker compose up
+#
+# Migrations are applied and Regions are seeded on start, so upgrading never requires
+# running database commands by hand. Nothing here reaches the internet at runtime: the
+# Region dataset is vendored in `data/geonames/`, and sign-in links are written to this
+# container's stdout until an operator configures a mail transport.
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-common_ground}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: ${POSTGRES_DB:-common_ground}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-common_ground}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-common_ground}:${POSTGRES_PASSWORD:-change-me}@db:5432/${POSTGRES_DB:-common_ground}
+      SWEEP_INTERVAL_MS: ${SWEEP_INTERVAL_MS:-3600000}
+    restart: unless-stopped
+
+volumes:
+  pgdata:

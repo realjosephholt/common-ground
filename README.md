@@ -71,9 +71,10 @@ outbound network: an organising tool whose core feature phones a third party on 
 statement is not a tool that the people who most need it can safely use. An LLM
 extractor is an opt-in, not an assumption.
 
-## Try the engine
+## Try it
 
-No database or Docker needed for the parts that exist today.
+No database and no Docker. Everything that needs persistence runs against real Postgres
+compiled to WASM, in process, so this is the whole setup:
 
 ```bash
 npm install && npm test
@@ -105,14 +106,51 @@ These are constraints, not preferences, and PRs that break them will be asked to
 - **Lawful, nonviolent action only.** Petitions, public comment, rallies, canvassing,
   boycotts, mutual aid, tenant and labour organising, community projects.
 
+## Self-hosting
+
+An Instance runs with no third-party API keys and no outbound network, so it can be
+hosted where the data must not leave. From a clean clone:
+
+```bash
+cp .env.example .env   # then change POSTGRES_PASSWORD
+docker compose up
+```
+
+That starts Postgres and the Instance together. Migrations are applied on start, so
+upgrading never means running database commands by hand, and the Region table is seeded
+from the GeoNames extract vendored in `data/geonames/` — no network, no account.
+
+### Root the vouching graph
+
+Nobody can be promoted until at least one Participant is `verified`, so a fresh Instance
+has one required step. Ask the person to sign in first — a Participant is created by
+consuming a sign-in link, not by an operator conjuring one — then:
+
+```bash
+docker compose exec app npm run instance:verify -- you@example.org
+```
+
+Sign-in links are written to the app container's stdout (`docker compose logs -f app`)
+until a mail transport is configured. Delivery sits behind an interface; the notification
+system arrives with a later milestone.
+
+Running `instance:verify` with no arguments lists who is already `verified`.
+
+### What is running
+
+Today the Instance is the database plus a background worker that applies migrations,
+seeds Regions, and archives Conversations that attracted no Votes. There is no HTTP
+server yet — serving deliberation over HTTP is M1's work, and standing up an unused
+server now would be a surface to secure with nothing behind it.
+
 ## Roadmap
 
 | | Milestone | Status |
 |---|---|---|
 | M2 | Discovery engine + simulation harness | **done** |
 | — | GraphRAG index, communities, search, taxonomy | **done** |
-| M0 | Postgres schema, Drizzle migrations, auth, Docker Compose | next |
-| M1 | Conversations, statement submission, vote UI | |
+| M0 | Postgres schema, Drizzle migrations, auth, Docker Compose | **done** |
+| M1 | HTTP surface: sign-in, statement submission, vote UI | next |
 | M3 | Cause dashboard, co-sponsorship, campaign promotion | |
 | M4 | Campaign workspace, tactics, actions, roles, shifts, RSVP | |
 | M5 | Check-in, outcome logging, tactic effectiveness | |

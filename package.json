@@ -17,7 +17,9 @@
     "db:generate": "drizzle-kit generate",
     "regions:build": "node scripts/build-region-extract.ts",
     "regions:seed": "vite-node scripts/seed-regions.ts",
-    "regions:reconcile": "vite-node scripts/reconcile-regions.ts"
+    "regions:reconcile": "vite-node scripts/reconcile-regions.ts",
+    "instance:start": "vite-node scripts/instance.ts",
+    "instance:verify": "vite-node scripts/designate-verified.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

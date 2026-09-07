@@ -72,3 +72,26 @@ describe("module boundaries", () => {
     });
   }
 });
+
+/**
+ * The offline guarantee, as a test.
+ *
+ * An Instance must run with no third-party API keys and no outbound network, so that it
+ * can be hosted where the data must not leave. That promise is easy to make and easy to
+ * break by accident — one convenient geocoding call, one crash reporter — and the break
+ * would be invisible until somebody audited the deployment.
+ *
+ * `scripts/build-region-extract.ts` is the deliberate exception and lives outside `src/`
+ * precisely so that this test can be absolute about everything inside it.
+ */
+describe("the offline guarantee", () => {
+  const NETWORK = [/https?:\/\//, /\bfetch\s*\(/, /\bnode:https?\b/, /\baxios\b/, /\bgot\b\s*\(/];
+
+  it("has nothing under src/ reaching the network", () => {
+    const offenders = sourceFiles("src").filter((file) => {
+      const source = readFileSync(file, "utf8");
+      return NETWORK.some((pattern) => pattern.test(source));
+    });
+    expect(offenders).toEqual([]);
+  });
+});
